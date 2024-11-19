@@ -209,5 +209,8 @@ while exitflag == False:
             x1 = (-b + math.sqrt(d)) / a
             x2 = (-b - math.sqrt(d)) / a
             print('x1 = ', x1, 'x2 = ', x2)
+    elif choise == 3:
+        randrange = input().split()
+        print(randint(int(randrange[0]), int(randrange[1])))
     elif choise == 0:
         break
