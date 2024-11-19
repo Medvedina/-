@@ -1,5 +1,6 @@
 #Турбо калькулятор
 from math import *
+from random import *
 import math
 exitflag = False
 print('Турбо-калькулятор 3000')
@@ -8,6 +9,7 @@ while exitflag == False:
     print('0 - выйти')
     print('1 - калькулятор')
     print('2 - решение квадратных уравнений')
+    print('3 - генератор случайных чисел')
     choise = int(input())
     if choise == 1:
         print('Калькулятор')
@@ -209,8 +211,18 @@ while exitflag == False:
             x1 = (-b + math.sqrt(d)) / a
             x2 = (-b - math.sqrt(d)) / a
             print('x1 = ', x1, 'x2 = ', x2)
+
     elif choise == 3:
+        print('Генератор случайных чисел')
+        print('Требуется ли исключить какие-либо значения? (список значений через пробел или "Enter", если не требуется')
+        ban = input().split()
+        print('Введите диапазон значений (1 100)')
         randrange = input().split()
-        print(randint(int(randrange[0]), int(randrange[1])))
+        print('Случайное число в промежутке от', randrange[0], 'до', randrange[1] + ':')
+        while(True):
+            res = randint(int(randrange[0]), int(randrange[1]))
+            if str(res) not in ban:
+                 break
+        print(res)
     elif choise == 0:
         break
