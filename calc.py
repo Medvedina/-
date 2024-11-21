@@ -1,93 +1,103 @@
-#Турбо калькулятор
-from math import *
-from random import *
-import math
+from math import pow, sqrt
+from random import randint
+
 exitflag = False
 print('Турбо-калькулятор 3000')
-while exitflag == False:
+
+while not exitflag:
     print('Выберите режим:')
     print('0 - выйти')
     print('1 - калькулятор')
     print('2 - решение квадратных уравнений')
     print('3 - генератор случайных чисел')
+
     choise = int(input())
+
     if choise == 1:
         print('Калькулятор')
-        print('Введите выражение, разделяя каждый символ пробелом. Например: 27 + (9 * 6 - 25) + 72 : 8')
-        print('Приоритеты выполнения: Степень ^; Умножение */ Деление : или /; Сложение +/Вычитание -')
+        print('Введите выражение, разделяя каждый символ пробелом.'
+              ' Например: 27 + (9 * 6 - 25) + 72 : 8')
+        print('Приоритеты выполнения: Степень ^; Умножение */ Деление : '
+              'или /; Сложение +/Вычитание -')
+
         query = input()
-        corrected_query = query.replace(',', '.').split()   #Исправление , на . в дробных числах
-        actions = []                             #Список действий
-        arg = []                                 #Список аргументов
-        hipriority = []                          #Список из срезов со скобками
-        hipriorityactions = []                   #Список действий в скобках
-        hipriorityarg = []                       #Список аргументов в скобках
-        hipriorityindex = []                     #Список индексов переменных в скобках
+        corrected_query = query.replace(',', '.').split()  # Исправление , на . в дробных числах
+
+        actions = []  # Список действий
+        arg = []  # Список аргументов
+        hipriority = []  # Список из срезов со скобками
+        hipriorityactions = []  # Список действий в скобках
+        hipriorityarg = []  # Список аргументов в скобках
+        hipriorityindex = []  # Список индексов переменных в скобках
         hiprior = False
-        for i in corrected_query:                           #Составление списков действий в скобках и без них
-            if i.startswith('(') == True:
+
+        for i in corrected_query:  # Составление списков действий в скобках и без них
+            if i.startswith('('):
                 hiprior = True
             if i == '+':
-                if hiprior == True:
+                if hiprior:
                     hipriorityactions.append('+')
                 else:
                     actions.append('+')
             elif i == '-':
-                if hiprior == True:
+                if hiprior:
                     hipriorityactions.append('-')
                 else:
                     actions.append('-')
-            elif i == '/' or i == ':':
-                if hiprior == True:
+            elif i in ('/', ':'):
+                if hiprior:
                     hipriorityactions.append('/')
                 else:
                     actions.append('/')
             elif i == '*':
-                if hiprior == True:
+                if hiprior:
                     hipriorityactions.append('*')
                 else:
                     actions.append('*')
             elif i == '^':
-                if hiprior == True:
+                if hiprior:
                     hipriorityactions.append('^')
                 else:
                     actions.append('^')
-            elif i.endswith(')') == True:
+            elif i.endswith(')'):
                 hipriority.append(i)
                 hipriorityactions.append('end')
                 hiprior = False
-            if hiprior == True:
+            if hiprior:
                 hipriority.append(i)
 
         hipriorityargflag = False
-        for i in corrected_query:                                         #Определение чисел, внесение их в список
-            if i.isnumeric() == True and hipriorityargflag == False:
+        for i in corrected_query:  # Определение чисел, внесение их в список
+            if i.isnumeric() and not hipriorityargflag:
                 arg.append(float(i))
-            elif i.isnumeric() == True and hipriorityargflag == True:
+            elif i.isnumeric() and hipriorityargflag:
                 hipriorityarg.append(float(i))
                 arg.append(float(i))
-            elif i.startswith('(') == True:
+            elif i.startswith('('):
                 hipriorityarg.append(float(i[1:]))
                 arg.append(float(i[1:]))
-                hipriorityindex.append(len(arg)-1)                        #Внесение индексов приоритетных действий для замены переменных в списке аргументов arg
+                hipriorityindex.append(
+                    len(arg) - 1)  # Внесение индексов приоритетных действий для замены переменных в списке аргументов arg
                 hipriorityargflag = True
-            elif i.endswith(')') == True:
+            elif i.endswith(')'):
                 hipriorityarg.append(float(i[:-1]))
                 arg.append(float(i[:-1]))
-                hipriorityindex.append(len(arg)-1)
+                hipriorityindex.append(len(arg) - 1)
                 hipriorityargflag = False
                 continue
 
-        while ('^' in hipriorityactions):                                                                     # Выполнение возведений в степень (скобки)
+        while '^' in hipriorityactions:  # Выполнение возведений в степень (скобки)
             for i in hipriorityactions:
                 if i == '^':
                     ind = hipriorityactions.index(i)
                     halfres = hipriorityarg[ind:ind + 2]
-                    b = math.pow(halfres[0], halfres[1])
+                    b = pow(halfres[0], halfres[1])
                     hipriorityarg.pop(ind + 1)
                     hipriorityarg[ind] = b
-                    hipriorityactions.pop(hipriorityactions.index(i))                                        # Замена 2ух чисел на результат действия. Аналогично во всех действиях (скобки)
-        while ('*' in hipriorityactions or '/' in hipriorityactions):                                        # Выполнение умножений и делений (скобки)
+                    hipriorityactions.pop(hipriorityactions.index(
+                        i))  # Замена 2 чисел на результат действия. Аналогично во всех действиях (скобки)
+
+        while '*' in hipriorityactions or '/' in hipriorityactions:  # Выполнение умножений и делений (скобки)
             for i in hipriorityactions:
                 if i == '*':
                     ind = hipriorityactions.index(i)
@@ -103,7 +113,8 @@ while exitflag == False:
                     hipriorityarg.pop(ind + 1)
                     hipriorityarg[ind] = b
                     hipriorityactions.pop(hipriorityactions.index(i))
-        while ('+' in hipriorityactions or '-' in hipriorityactions):                        # Выполнения сложений, вычитаний (скобки)
+
+        while '+' in hipriorityactions or '-' in hipriorityactions:  # Выполнения сложений, вычитаний (скобки)
             for i in hipriorityactions:
                 if i == '+':
                     ind = hipriorityactions.index(i)
@@ -119,31 +130,35 @@ while exitflag == False:
                     hipriorityarg.pop(ind + 1)
                     hipriorityarg[ind] = b
                     hipriorityactions.pop(hipriorityactions.index(i))
+
         delcounter = 0
         delcounter1 = 0
-        for j in range(len(hipriorityarg)):                                 #Замена аргументов основного списка на результаты действий в скобках с удалением лишних
+        for j in range(
+                len(hipriorityarg)):  # Замена аргументов основного списка на результаты действий в скобках с удалением лишних
             changeflag = False
-            for i in range(0, 2):
-                if changeflag == True:
-                    delcounter += len(arg[int(hipriorityindex[0]) + 1:int(hipriorityindex[1]+1)])
-                    del arg[int(hipriorityindex[0] - delcounter1) + 1:int(hipriorityindex[1]+1 - delcounter1)]
+            for i in range(2):
+                if changeflag:
+                    delcounter += len(arg[int(hipriorityindex[0]) + 1:int(hipriorityindex[1] + 1)])
+                    del arg[int(hipriorityindex[0] - delcounter1) + 1:int(hipriorityindex[1] + 1 - delcounter1)]
                     delcounter1 = delcounter
                     hipriorityindex.pop(0)
                     hipriorityindex.pop(0)
                     hipriorityarg.pop(0)
                 else:
-                    arg[int(hipriorityindex[0])-delcounter] = hipriorityarg[0]
+                    arg[int(hipriorityindex[0]) - delcounter] = hipriorityarg[0]
                     changeflag = True
-        while('^' in actions):                                                   #Выполнение возведений в степень
+
+        while '^' in actions:  # Выполнение возведений в степень
             for i in actions:
                 if i == '^':
                     ind = actions.index(i)
-                    halfres = arg[ind:ind+2]
-                    b = math.pow(halfres[0], halfres[1])
-                    arg.pop(ind+1)
+                    halfres = arg[ind:ind + 2]
+                    b = pow(halfres[0], halfres[1])
+                    arg.pop(ind + 1)
                     arg[ind] = b
-                    actions.pop(actions.index(i))                               #Замена 2ух чисел на результат действия. Аналогично во всех действиях
-        while('*' in actions or '/' in actions):                                #Выполнение умножений и делений
+                    actions.pop(actions.index(i))  # Замена 2 чисел на результат действия. Аналогично во всех действиях
+
+        while '*' in actions or '/' in actions:  # Выполнение умножений и делений
             for i in actions:
                 if i == '*':
                     ind = actions.index(i)
@@ -159,7 +174,8 @@ while exitflag == False:
                     arg.pop(ind + 1)
                     arg[ind] = b
                     actions.pop(actions.index(i))
-        while('+' in actions or '-' in actions):                                #Выполнения сложений, вычитаний
+
+        while '+' in actions or '-' in actions:  # Выполнения сложений, вычитаний
             for i in actions:
                 if i == '+':
                     ind = actions.index(i)
@@ -175,21 +191,25 @@ while exitflag == False:
                     arg.pop(ind + 1)
                     arg[ind] = b
                     actions.pop(actions.index(i))
+
         print('Ответ: ', float(arg[0]))
+
     elif choise == 2:
         print('Решение квадратных уравнений')
-        print('Введите квадратное урванение по форме a * x ^ 2 + b * x + c')
+        print('Введите квадратное уравнение по форме a * x ^ 2 + b * x + c')
+
         func = input()
         funcforarg = func.split()
         arg = []
-        flag = 0                                        #Введение флага для работы как ввода вида "X^2", так и "x ^ 2"
+        flag = 0  # Введение флага для работы как ввода вида "X^2", так и "x ^ 2"
         minus = False
-        for i in funcforarg:                            #Определение к-тов a, b и c, внесение их в список
+
+        for i in funcforarg:  # Определение к-тов a, b и c, внесение их в список
             if i == '-':
                 minus = True
-            if i.isnumeric() == True:
-                if minus == True:
-                    arg.append(float('-'+i))
+            if i.isnumeric():
+                if minus:
+                    arg.append(float('-' + i))
                     minus = False
                 else:
                     if flag == '^':
@@ -199,30 +219,36 @@ while exitflag == False:
             else:
                 flag = i
                 continue
+
         a, b, c = arg
-        d = float()
-        d = (math.pow(b, 2)) - (4*a*c)
-        if d < 0:                                       #Решение уравнения
+        d = (pow(b, 2)) - (4 * a * c)
+
+        if d < 0:  # Решение уравнения
             print('Действительных решений нет =(')
         elif d == 0:
-            x = (-b/a)
+            x = (-b / a)
             print('x1,x2 = ', x)
         else:
-            x1 = (-b + math.sqrt(d)) / a
-            x2 = (-b - math.sqrt(d)) / a
+            x1 = (-b + sqrt(d)) / a
+            x2 = (-b - sqrt(d)) / a
             print('x1 = ', x1, 'x2 = ', x2)
 
     elif choise == 3:
         print('Генератор случайных чисел')
-        print('Требуется ли исключить какие-либо значения? (список значений через пробел или "Enter", если не требуется')
+        print(
+            'Требуется ли исключить какие-либо значения? (список значений через пробел или "Enter", если не требуется)')
+
         ban = input().split()
         print('Введите диапазон значений (1 100)')
+
         randrange = input().split()
         print('Случайное число в промежутке от', randrange[0], 'до', randrange[1] + ':')
-        while(True):
+
+        while True:
             res = randint(int(randrange[0]), int(randrange[1]))
             if str(res) not in ban:
-                 break
+                break
+
         print(res)
     elif choise == 0:
         break
