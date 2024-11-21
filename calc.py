@@ -13,184 +13,95 @@ while not EXITFLAG:
 
     CHOISE = int(input())
 
-    if CHOISE == 1:
-        print('Калькулятор')
-        print('Введите выражение, разделяя каждый символ пробелом.'
-              ' Например: 27 + (9 * 6 - 25) + 72 : 8')
-        print('Приоритеты выполнения: Степень ^; Умножение */ Деление : '
-              'или /; Сложение +/Вычитание -')
-
-        QUERY = input()
-        CORRECTED_QUERY = QUERY.replace(',', '.').split()  # Исправление , на . в дробных числах
-
-        ACTIONS = []  # Список действий
-        ARG = []  # Список аргументов
-        HIPRIORITY = []  # Список из срезов со скобками
-        HIPRIORITYACTIONS = []  # Список действий в скобках
-        HIPRIORITYARG = []  # Список аргументов в скобках
-        HIPRIORITYINDEX = []  # Список индексов переменных в скобках
-        HIPRIOR = False
-
-        for I in CORRECTED_QUERY:  # Составление списков действий в скобках и без них
-            if I.startswith('('):
-                HIPRIOR = True
-            if I == '+':
-                if HIPRIOR:
-                    HIPRIORITYACTIONS.append('+')
-                else:
-                    ACTIONS.append('+')
-            elif I == '-':
-                if HIPRIOR:
-                    HIPRIORITYACTIONS.append('-')
-                else:
-                    ACTIONS.append('-')
-            elif I in ('/', ':'):
-                if HIPRIOR:
-                    HIPRIORITYACTIONS.append('/')
-                else:
-                    ACTIONS.append('/')
-            elif I == '*':
-                if HIPRIOR:
-                    HIPRIORITYACTIONS.append('*')
-                else:
-                    ACTIONS.append('*')
-            elif I == '^':
-                if HIPRIOR:
-                    HIPRIORITYACTIONS.append('^')
-                else:
-                    ACTIONS.append('^')
-            elif I.endswith(')'):
-                HIPRIORITY.append(I)
-                HIPRIORITYACTIONS.append('end')
-                HIPRIOR = False
-            if HIPRIOR:
-                HIPRIORITY.append(I)
-
-        HIPRIORITYARGFLAG = False
-        for I in CORRECTED_QUERY:  # Определение чисел, внесение их в список
-            if I.isnumeric() and not HIPRIORITYARGFLAG:
-                ARG.append(float(I))
-            elif I.isnumeric() and HIPRIORITYARGFLAG:
-                HIPRIORITYARG.append(float(I))
-                ARG.append(float(I))
-            elif I.startswith('('):
-                HIPRIORITYARG.append(float(I[1:]))
-                ARG.append(float(I[1:]))
-                HIPRIORITYINDEX.append(
-                    len(ARG) - 1)  # Внесение индексов приоритетных действий для замены переменных в списке аргументов ARG
-                HIPRIORITYARGFLAG = True
-            elif I.endswith(')'):
-                HIPRIORITYARG.append(float(I[:-1]))
-                ARG.append(float(I[:-1]))
-                HIPRIORITYINDEX.append(len(ARG) - 1)
-                HIPRIORITYARGFLAG = False
-                continue
-
-        while '^' in HIPRIORITYACTIONS:  # Выполнение возведений в степень (скобки)
-            for I in HIPRIORITYACTIONS:
-                if I == '^':
-                    IND = HIPRIORITYACTIONS.index(I)
-                    HALFRES = HIPRIORITYARG[IND:IND + 2]
-                    B = pow(HALFRES[0], HALFRES[1])
-                    HIPRIORITYARG.pop(IND + 1)
-                    HIPRIORITYARG[IND] = B
-                    HIPRIORITYACTIONS.pop(HIPRIORITYACTIONS.index(I))  # Замена 2 чисел на результат действия. Аналогично во всех действиях (скобки)
-
-        while '*' in HIPRIORITYACTIONS or '/' in HIPRIORITYACTIONS:  # Выполнение умножений и делений (скобки)
-            for I in HIPRIORITYACTIONS:
-                if I == '*':
-                    IND = HIPRIORITYACTIONS.index(I)
-                    HALFRES = HIPRIORITYARG[IND:IND + 2]
-                    B = HALFRES[0] * HALFRES[1]
-                    HIPRIORITYARG.pop(IND + 1)
-                    HIPRIORITYARG[IND] = B
-                    HIPRIORITYACTIONS.pop(HIPRIORITYACTIONS.index(I))
-                elif I == '/':
-                    IND = HIPRIORITYACTIONS.index(I)
-                    HALFRES = HIPRIORITYARG[IND:IND + 2]
-                    B = HALFRES[0] / HALFRES[1]
-                    HIPRIORITYARG.pop(IND + 1)
-                    HIPRIORITYARG[IND] = B
-                    HIPRIORITYACTIONS.pop(HIPRIORITYACTIONS.index(I))
-
-        while '+' in HIPRIORITYACTIONS or '-' in HIPRIORITYACTIONS:  # Выполнения сложений, вычитаний (скобки)
-            for I in HIPRIORITYACTIONS:
-                if I == '+':
-                    IND = HIPRIORITYACTIONS.index(I)
-                    HALFRES = HIPRIORITYARG[IND:IND + 2]
-                    B = HALFRES[0] + HALFRES[1]
-                    HIPRIORITYARG.pop(IND + 1)
-                    HIPRIORITYARG[IND] = B
-                    HIPRIORITYACTIONS.pop(HIPRIORITYACTIONS.index(I))
-                elif I == '-':
-                    IND = HIPRIORITYACTIONS.index(I)
-                    HALFRES = HIPRIORITYARG[IND:IND + 2]
-                    B = HALFRES[0] - HALFRES[1]
-                    HIPRIORITYARG.pop(IND + 1)
-                    HIPRIORITYARG[IND] = B
-                    HIPRIORITYACTIONS.pop(HIPRIORITYACTIONS.index(I))
-
-        DELCOUNTER = 0
-        DELCOUNTER1 = 0
-        for J in range(len(HIPRIORITYARG)):  # Замена аргументов основного списка на результаты действий в скобках с удалением лишних
-            CHANGEFLAG = False
-            for I in range(2):
-                if CHANGEFLAG:
-                    DELCOUNTER += len(ARG[int(HIPRIORITYINDEX[0]) + 1:int(HIPRIORITYINDEX[1] + 1)])
-                    del ARG[int(HIPRIORITYINDEX[0] - DELCOUNTER1) + 1:int(HIPRIORITYINDEX[1] + 1 - DELCOUNTER1)]
-                    DELCOUNTER1 = DELCOUNTER
-                    HIPRIORITYINDEX.pop(0)
-                    HIPRIORITYINDEX.pop(0)
-                    HIPRIORITYARG.pop(0)
-                else:
-                    ARG[int(HIPRIORITYINDEX[0]) - DELCOUNTER] = HIPRIORITYARG[0]
-                    CHANGEFLAG = True
-
-        while '^' in ACTIONS:  # Выполнение возведений в степень
-            for I in ACTIONS:
-                if I == '^':
-                    IND = ACTIONS.index(I)
-                    HALFRES = ARG[IND:IND + 2]
-                    B = pow(HALFRES[0], HALFRES[1])
-                    ARG.pop(IND + 1)
-                    ARG[IND] = B
-                    ACTIONS.pop(ACTIONS.index(I))  # Замена 2 чисел на результат действия. Аналогично во всех действиях
-
-        while '*' in ACTIONS or '/' in ACTIONS:  # Выполнение умножений и делений
-            for I in ACTIONS:
-                if I == '*':
-                    IND = ACTIONS.index(I)
-                    HALFRES = ARG[IND:IND + 2]
-                    B = HALFRES[0] * HALFRES[1]
-                    ARG.pop(IND + 1)
-                    ARG[IND] = B
-                    ACTIONS.pop(ACTIONS.index(I))
-                elif I == '/':
-                    IND = ACTIONS.index(I)
-                    HALFRES = ARG[IND:IND + 2]
-                    B = HALFRES[0] / HALFRES[1]
-                    ARG.pop(IND + 1)
-                    ARG[IND] = B
-                    ACTIONS.pop(ACTIONS.index(I))
-
-        while '+' in ACTIONS or '-' in ACTIONS:  # Выполнения сложений, вычитаний
-            for I in ACTIONS:
-                if I == '+':
-                    IND = ACTIONS.index(I)
-                    HALFRES = ARG[IND:IND + 2]
-                    B = HALFRES[0] + HALFRES[1]
-                    ARG.pop(IND + 1)
-                    ARG[IND] = B
-                    ACTIONS.pop(ACTIONS.index(I))
-                elif I == '-':
-                    IND = ACTIONS.index(I)
-                    HALFRES = ARG[IND:IND + 2]
-                    B = HALFRES[0] - HALFRES[1]
-                    ARG.pop(IND + 1)
-                    ARG[IND] = B
-                    ACTIONS.pop(ACTIONS.index(I))
-
-        print('Ответ: ', float(ARG[0]))
+        if CHOISE == 1:
+        NUMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
+        OPERATIONS = ['+', '-', '*', '/', '^']
+        ACTIONS = []
+        FULL_ACTIONS = []
+        CURRENT_ACTION = ''
+        while True:
+            QUERY = input()
+            for CHAR in QUERY:
+                if CHAR in NUMS:
+                    if CHAR != ',':
+                        CURRENT_ACTION += CHAR
+                    elif CHAR == ',':
+                        CURRENT_ACTION += '.'
+                elif CHAR in OPERATIONS or CHAR in '()':
+                    if CURRENT_ACTION:
+                      ACTIONS.append(CURRENT_ACTION)
+                      CURRENT_ACTION = ''
+                      ACTIONS.append(CHAR)
+                if CURRENT_ACTION:
+                    ACTIONS.append(CURRENT_ACTION)
+                ACTIONS.insert(0, '(')
+                ACTIONS.append(')')
+                FULL_ACTIONS=ACTIONS.copy()
+                while len(FULL_ACTIONS) != 1:
+                    STEP = 0
+                    BRACKETFLAG = True
+                    while (STEP < len(FULL_ACTIONS)):
+                        if BRACKETFLAG == True:
+                            if FULL_ACTIONS[STEP] == ')':
+                                STEP_RIGHT = STEP
+                                ACTIONS.clear()
+                                SUBSTEP = 0
+                                while STEP_LEFT + SUBSTEP <= STEP_RIGHT:
+                                    ACTIONS.append(FULL_ACTIONS[STEP_LEFT])
+                                    del FULL_ACTIONS[STEP_LEFT]
+                                    SUBSTEP += 1
+                                BRACKETFLAG = False
+                                del ACTIONS[0]
+                                del ACTIONS[STEP_RIGHT - STEP_LEFT - 1]
+                        elif FULL_ACTIONS[STEP] == '(':
+                            STEP_LEFT = STEP
+                        STEP += 1
+                    ACTIONS_COPY = ACTIONS
+                    while STEP < len(ACTIONS):
+                        if ACTIONS[STEP] == '^':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1])**float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS[STEP]
+                            STEP -= 2
+                        STEP += 1
+                    STEP = 0
+                    ACTIONS_COPY = ACTIONS
+                    while STEP < len(ACTIONS):
+                        if ACTIONS[STEP] == '*':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) * float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS[STEP]
+                            STEP -= 2
+                        STEP += 1
+                    STEP = 0
+                    ACTIONS_COPY = ACTIONS
+                    while STEP < len(ACTIONS):
+                        if ACTIONS[STEP] == '/':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) / float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS[STEP]
+                            STEP -= 2
+                        STEP += 1
+                    STEP = 0
+                    ACTIONS_COPY = ACTIONS
+                    while STEP < len(ACTIONS):
+                        if ACTIONS[STEP] == '+':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) + float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS[STEP]
+                            STEP -= 2
+                        STEP += 1
+                    STEP = 0
+                    ACTIONS_COPY = ACTIONS
+                    while STEP < len(ACTIONS):
+                        if ACTIONS[STEP] == '-':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) - float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS[STEP]
+                            STEP -= 2
+                        STEP += 1
+            FULL_ACTIONS.insert(STEP_LEFT, ACTIONS.copy[0])
+        print(float(FULL_ACTIONS))
 
     elif CHOISE == 2:
         print('Решение квадратных уравнений')
