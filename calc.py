@@ -1,4 +1,3 @@
-from math import pow, sqrt
 from random import randint
 
 EXITFLAG = False
@@ -13,35 +12,40 @@ while not EXITFLAG:
 
     CHOISE = int(input())
 
-        if CHOISE == 1:
+    if CHOISE == 1:
         NUMS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
         OPERATIONS = ['+', '-', '*', '/', '^']
         ACTIONS = []
         FULL_ACTIONS = []
         CURRENT_ACTION = ''
-        while True:
+        QUERY = 'Null'
+        while(QUERY != 'exit'):
+            print('Введите выражение: ')
             QUERY = input()
-            for CHAR in QUERY:
-                if CHAR in NUMS:
-                    if CHAR != ',':
-                        CURRENT_ACTION += CHAR
-                    elif CHAR == ',':
-                        CURRENT_ACTION += '.'
-                elif CHAR in OPERATIONS or CHAR in '()':
-                    if CURRENT_ACTION:
-                      ACTIONS.append(CURRENT_ACTION)
-                      CURRENT_ACTION = ''
-                      ACTIONS.append(CHAR)
+            if QUERY == 'exit':
+                continue
+            else:
+                for CHAR in QUERY:
+                    if CHAR in NUMS:
+                        if CHAR != ',':
+                            CURRENT_ACTION += CHAR
+                        elif CHAR == ',':
+                            CURRENT_ACTION += '.'
+                    elif CHAR in OPERATIONS or CHAR in '()':
+                        if CURRENT_ACTION:
+                            ACTIONS.append(CURRENT_ACTION)
+                            CURRENT_ACTION = ''
+                        ACTIONS.append(CHAR)
                 if CURRENT_ACTION:
                     ACTIONS.append(CURRENT_ACTION)
                 ACTIONS.insert(0, '(')
                 ACTIONS.append(')')
-                FULL_ACTIONS=ACTIONS.copy()
+                FULL_ACTIONS = ACTIONS.copy()
                 while len(FULL_ACTIONS) != 1:
                     STEP = 0
                     BRACKETFLAG = True
                     while (STEP < len(FULL_ACTIONS)):
-                        if BRACKETFLAG == True:
+                        if BRACKETFLAG:
                             if FULL_ACTIONS[STEP] == ')':
                                 STEP_RIGHT = STEP
                                 ACTIONS.clear()
@@ -53,55 +57,48 @@ while not EXITFLAG:
                                 BRACKETFLAG = False
                                 del ACTIONS[0]
                                 del ACTIONS[STEP_RIGHT - STEP_LEFT - 1]
-                        elif FULL_ACTIONS[STEP] == '(':
-                            STEP_LEFT = STEP
+                            elif FULL_ACTIONS[STEP] == '(':
+                                STEP_LEFT = STEP
                         STEP += 1
                     ACTIONS_COPY = ACTIONS
+                    STEP = 0
                     while STEP < len(ACTIONS):
                         if ACTIONS[STEP] == '^':
-                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1])**float(ACTIONS_COPY[STEP + 1])
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) ** float(ACTIONS_COPY[STEP + 1])
                             del ACTIONS_COPY[STEP]
-                            del ACTIONS[STEP]
+                            del ACTIONS_COPY[STEP]
                             STEP -= 2
                         STEP += 1
                     STEP = 0
-                    ACTIONS_COPY = ACTIONS
+                    ACTIONS = ACTIONS_COPY
                     while STEP < len(ACTIONS):
                         if ACTIONS[STEP] == '*':
                             ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) * float(ACTIONS_COPY[STEP + 1])
                             del ACTIONS_COPY[STEP]
-                            del ACTIONS[STEP]
-                            STEP -= 2
-                        STEP += 1
-                    STEP = 0
-                    ACTIONS_COPY = ACTIONS
-                    while STEP < len(ACTIONS):
-                        if ACTIONS[STEP] == '/':
-                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) / float(ACTIONS_COPY[STEP + 1])
                             del ACTIONS_COPY[STEP]
-                            del ACTIONS[STEP]
+                            STEP -= 2
+                        elif ACTIONS[STEP] == '/':
+                            ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) * float(ACTIONS_COPY[STEP + 1])
+                            del ACTIONS_COPY[STEP]
+                            del ACTIONS_COPY[STEP]
                             STEP -= 2
                         STEP += 1
                     STEP = 0
-                    ACTIONS_COPY = ACTIONS
+                    ACTIONS = ACTIONS_COPY
                     while STEP < len(ACTIONS):
                         if ACTIONS[STEP] == '+':
                             ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) + float(ACTIONS_COPY[STEP + 1])
                             del ACTIONS_COPY[STEP]
-                            del ACTIONS[STEP]
+                            del ACTIONS_COPY[STEP]
                             STEP -= 2
-                        STEP += 1
-                    STEP = 0
-                    ACTIONS_COPY = ACTIONS
-                    while STEP < len(ACTIONS):
-                        if ACTIONS[STEP] == '-':
+                        elif ACTIONS[STEP] == '-':
                             ACTIONS_COPY[STEP - 1] = float(ACTIONS_COPY[STEP - 1]) - float(ACTIONS_COPY[STEP + 1])
                             del ACTIONS_COPY[STEP]
-                            del ACTIONS[STEP]
+                            del ACTIONS_COPY[STEP]
                             STEP -= 2
                         STEP += 1
-            FULL_ACTIONS.insert(STEP_LEFT, ACTIONS.copy[0])
-        print(float(FULL_ACTIONS))
+                    FULL_ACTIONS.insert(STEP_LEFT, ACTIONS_COPY[0])
+                print(float(FULL_ACTIONS[0]))
 
     elif CHOISE == 2:
         print('Решение квадратных уравнений')
@@ -138,13 +135,14 @@ while not EXITFLAG:
             X = (-B / A)
             print('x1,x2 = ', X)
         else:
-            X1 = (-B + sqrt(D)) / A
-            X2 = (-B - sqrt(D)) / A
+            X1 = (-B + D ** (0.5)) / A
+            X2 = (-B - D ** (0.5)) / A
             print('x1 = ', X1, 'x2 = ', X2)
 
     elif CHOISE == 3:
         print('Генератор случайных чисел')
-        print('Требуется ли исключить какие-либо значения? (список значений через пробел или "Enter", если не требуется)')
+        print(
+            'Требуется ли исключить какие-либо значения? (список значений через пробел или "Enter", если не требуется)')
 
         BAN = input().split()
         print('Введите диапазон значений (1 100)')
