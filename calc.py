@@ -1,9 +1,8 @@
 from random import randint
 
-EXITFLAG = False
 print('Турбо-калькулятор 3000')
 
-while not EXITFLAG:
+while True:
     print('Выберите режим:')
     print('0 - выйти')
     print('1 - калькулятор')
@@ -20,7 +19,7 @@ while not EXITFLAG:
         CURRENT_ACTION = ''
         QUERY = 'Null'
         while(QUERY != 'exit'):
-            print('Введите выражение: ')
+            print('Введите выражение или "exit", чтобы выйти ')
             QUERY = input()
             if QUERY == 'exit':
                 continue
