@@ -115,10 +115,10 @@ def rand(randrange, banlist):
         return 'Ошибка ввода(введено больше двух чисел). Введите диапазон согласно примеру'
     else:
         for i in randrange:
-            if not i.isnumeric() and i != ' ' and i != '':
+            if not i.isnumeric() and i != ' ' and i != '' and i != '-':
                 return 'Ошибка ввода(получены не числовые значения). Введите диапазон согласно примеру'
     for i in banlist:
-        if not i.isnumeric() and i != ' ' and i != '':
+        if not i.isnumeric() and i != ' ' and i != '' and i != '-':
             return 'Ошибка ввода(запрещённые числа). Введите диапазон согласно примеру'
 
     from random import randint
@@ -126,6 +126,14 @@ def rand(randrange, banlist):
         res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
     except:
         return 'Ошибка ввода (Получен пустой диапазон). Расположите числа по возрастанию'
+    counter_range = 0
+    counter_banlist = 0
+    for i in range(int(randrange.split()[0]), int(randrange.split()[1]) + 1):
+        counter_range += 1
+        if i in list(map(int, banlist.split())):
+            counter_banlist += 1
+    if counter_range == counter_banlist:
+        return 'Ошибка ввода (Запрещены все значения)'
     while res in list(map(int, banlist.split())):
         res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
     return res
