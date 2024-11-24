@@ -1,4 +1,8 @@
-print('***Турбо-калькулятор 3000***')
+print('***Турбо-калькулятор 3000***\n')
+
+from service.service_functions import mode_check
+
+from history.logs_script import *
 
 while True:
     print('Выберите режим:')
@@ -8,24 +12,19 @@ while True:
 
     choise = input()
 
-    if not choise.isnumeric():
-        print('Нет такого режима \n')
-        continue
-
-    elif int(choise) >= 3:
-        print('Нет такого режима \n')
-        continue
-
-    choise = int(choise)
-
     from history.logs_script import *
     inputlog(choise)
 
-    if choise == 0:
+    if not mode_check(choise) and choise != '0':
+        print('Нет такого режима\n')
+        continue
+
+    elif mode_check(choise) == 0:
+        print('Завершение работы')
         inputlog('CLOSED')
         break
 
-    elif choise == 1:
+    elif mode_check(choise) == 1:
         from service.service_functions import calc
         print('Калькулятор')
         print('Введите выражение, (например: (13 + 2 * 3 / (32 + 5) + 2 ^ 5) '
@@ -37,7 +36,7 @@ while True:
             outputlog(result)
             query = input()
 
-    elif choise == 2:
+    elif mode_check(choise) == 2:
         from service.service_functions import rand
         print('Генератор случайных чисел')
         while True:
