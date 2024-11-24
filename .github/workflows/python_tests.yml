@@ -25,3 +25,4 @@ jobs:
       run: |
         pytest tests/test_calc.py
         pytest tests/test_rand.py
+        pytest tests/test_modecheck.py
