@@ -59,7 +59,7 @@ def calc(query):
                 while step < len(actions):
                     if actions[step] == '^':
                         actions_copy[step - 1] = (float(actions_copy[step - 1]) **
-                                                   float(actions_copy[step + 1]))
+                                                  float(actions_copy[step + 1]))
                         del actions_copy[step]
                         del actions_copy[step]
                         step -= 2
@@ -69,14 +69,14 @@ def calc(query):
                 while step < len(actions):
                     if actions[step] == '*':
                         actions_copy[step - 1] = (float(actions_copy[step - 1]) *
-                                                   float(actions_copy[step + 1]))
+                                                  float(actions_copy[step + 1]))
                         del actions_copy[step]
                         del actions_copy[step]
                         step -= 2
                     elif actions[step] == '/':
                         if float(actions_copy[step + 1]) != 0:
                             actions_copy[step - 1] = (float(actions_copy[step - 1]) /
-                                                       float(actions_copy[step + 1]))
+                                                      float(actions_copy[step + 1]))
                             del actions_copy[step]
                             del actions_copy[step]
                             step -= 2
@@ -88,13 +88,13 @@ def calc(query):
                 while step < len(actions):
                     if actions[step] == '+':
                         actions_copy[step - 1] = (float(actions_copy[step - 1]) +
-                                                   float(actions_copy[step + 1]))
+                                                  float(actions_copy[step + 1]))
                         del actions_copy[step]
                         del actions_copy[step]
                         step -= 2
                     elif actions[step] == '-':
                         actions_copy[step - 1] = (float(actions_copy[step - 1]) -
-                                                   float(actions_copy[step + 1]))
+                                                  float(actions_copy[step + 1]))
                         del actions_copy[step]
                         del actions_copy[step]
                         step -= 2
@@ -137,3 +137,14 @@ def rand(randrange, banlist):
     while res in list(map(int, banlist.split())):
         res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
     return res
+
+
+def mode_check(choise):
+    if not choise.isnumeric():
+        return False
+
+    elif int(choise) >= 3:
+        return False
+
+    else:
+        return int(choise)
