@@ -24,3 +24,4 @@ jobs:
     - name: Run tests
       run: |
         pytest tests/test_calc.py
+        pytest tests/test_rand.py
