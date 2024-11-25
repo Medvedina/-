@@ -1,5 +1,5 @@
 def calc(query):
-    from history.logs_script import inputlog
+    from history.logs_script import inputlog, outputlog
 
     inputlog(query)
 
@@ -10,13 +10,17 @@ def calc(query):
     for i in query:
         if (i not in nums and i not in operations and
                 i != '(' and i != ')' and i != ' '):
-            return 'Ошибка ввода. Введите выражение аналогично примеру'
+            res = 'Ошибка ввода. Введите выражение аналогично примеру'
+            outputlog(res)
+            return res
     actions = []
     full_actions = []
     current_action = ''
     while query != 'exit':
         if query == 'exit':
-            return 'Выход'
+            res = 'Выход'
+            outputlog(res)
+            return res
         else:
             step_left = 0
             for char in query:
@@ -81,7 +85,9 @@ def calc(query):
                             del actions_copy[step]
                             step -= 2
                         else:
-                            return '*** Ошибка: деление на ноль ***'
+                            res = '*** Ошибка: деление на ноль ***'
+                            outputlog(res)
+                            return res
                     step += 1
                 step = 0
                 actions = actions_copy
@@ -102,30 +108,42 @@ def calc(query):
                 try:
                     full_actions.insert(step_left, actions_copy[0])
                 except IndexError:
-                    return 'Ошибка ввода. Введите выражение аналогично примеру'
-            return float(full_actions[0])
+                    res = 'Ошибка ввода. Введите выражение аналогично примеру'
+                    outputlog(res)
+                    return res
+            res = float(full_actions[0])
+            outputlog(res)
+            return res
 
 
 def rand(randrange, banlist):
-    from history.logs_script import inputlog
+    from history.logs_script import inputlog, outputlog
 
     inputlog(randrange, banlist)
 
     if len(randrange.split()) > 2:
-        return 'Ошибка ввода(введено больше двух чисел). Введите диапазон согласно примеру'
+        res = 'Ошибка ввода(введено больше двух чисел). Введите диапазон согласно примеру'
+        outputlog(res)
+        return res
     else:
         for i in randrange:
             if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-                return 'Ошибка ввода(получены не числовые значения). Введите диапазон согласно примеру'
+                res = 'Ошибка ввода(получены не числовые значения). Введите диапазон согласно примеру'
+                outputlog(res)
+                return res
     for i in banlist:
         if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-            return 'Ошибка ввода(запрещённые числа). Введите диапазон согласно примеру'
+            res = 'Ошибка ввода(запрещённые числа). Введите диапазон согласно примеру'
+            outputlog(res)
+            return res
 
     from random import randint
     try:
         res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
     except:
-        return 'Ошибка ввода (Получен пустой диапазон). Расположите числа по возрастанию'
+        res = 'Ошибка ввода (Получен пустой диапазон). Расположите числа по возрастанию'
+        outputlog(res)
+        return res
     counter_range = 0
     counter_banlist = 0
     for i in range(int(randrange.split()[0]), int(randrange.split()[1]) + 1):
@@ -133,13 +151,18 @@ def rand(randrange, banlist):
         if i in list(map(int, banlist.split())):
             counter_banlist += 1
     if counter_range == counter_banlist:
-        return 'Ошибка ввода (Запрещены все значения)'
+        res = 'Ошибка ввода (Запрещены все значения)'
+        outputlog(res)
+        return res
     while res in list(map(int, banlist.split())):
         res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
+        outputlog(res)
     return res
 
 
 def mode_check(choise):
+    from history.logs_script import inputlog
+    inputlog(choise)
     if not choise.isnumeric():
         return False
 
