@@ -2,8 +2,6 @@ print('***Турбо-калькулятор 3000***\n')
 
 from service.service_functions import mode_check
 
-from history.logs_script import *
-
 while True:
     print('Выберите режим:')
     print('0 - выйти')
@@ -12,8 +10,6 @@ while True:
 
     choise = input()
 
-    from history.logs_script import *
-    inputlog(choise)
 
     if not mode_check(choise) and choise != '0':
         print('Нет такого режима\n')
@@ -21,7 +17,6 @@ while True:
 
     elif mode_check(choise) == 0:
         print('Завершение работы')
-        inputlog('CLOSED')
         break
 
     elif mode_check(choise) == 1:
@@ -33,7 +28,6 @@ while True:
         while query != 'exit':
             result = str(calc(query))
             print('Ответ:', result)
-            outputlog(result)
             query = input()
 
     elif mode_check(choise) == 2:
@@ -50,7 +44,6 @@ while True:
                 if banlist != 'exit':
                     result = rand(randrange, banlist)
                     print('\n---- Число:', result)
-                    outputlog(str(result))
                 else:
                     break
             else:
