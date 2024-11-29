@@ -1,0 +1,27 @@
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+
+# Временные файлы
+*.txt
+*.log
+tmp/
+cache/
+
+# Зависимости
+node_modules/
+vendor/
+.env
+
+# Собранные файлы
+*.exe
+*.dll
+*.o
+
+# Файлы тестирования
+coverage/
+*.pytest_cache/
