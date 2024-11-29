@@ -1,61 +1,61 @@
+from history.logs_script import *
+
+def random_check(test_value):
+    if (not test_value.isnumeric() and test_value != ' ' and
+            test_value != '' and test_value != '-'):
+        return True
+    else:
+        return False
 def calc(query):
-    from history.logs_script import inputlog, outputlog
-
-    inputlog(query)
-
+    logger.info(f'*Калькулятор* Введено: {query}')
     nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
     operations = ['+', '-', '*', '/', '^']
-    if query.count('(') != query.count(')'):
-        return 'Ошибка ввода. Закройте все скобки.'
-    for i in query:
-        if (i not in nums and i not in operations and
-                i != '(' and i != ')' and i != ' '):
-            res = 'Ошибка ввода. Введите выражение аналогично примеру'
-            outputlog(res)
-            return res
     actions = []
-    full_actions = []
-    current_action = ''
+    actions_full = []
+    action_current = ''
+
+    if query.count('(') != query.count(')'):
+        logger.error(f'Ошибка ввода. Закройте все скобки')
+        return 'Ошибка ввода. Закройте все скобки'
+
     while query != 'exit':
         if query == 'exit':
-            res = 'Выход'
-            outputlog(res)
-            return res
+            return 'Выход'
         else:
             step_left = 0
             for char in query:
                 if char in nums:
                     if char != ',':
-                        current_action += char
+                        action_current += char
                     elif char == ',':
-                        current_action += '.'
+                        action_current += '.'
                 elif char in operations or char in '()':
-                    if current_action:
-                        actions.append(current_action)
-                        current_action = ''
+                    if action_current:
+                        actions.append(action_current)
+                        action_current = ''
                     actions.append(char)
-            if current_action:
-                actions.append(current_action)
+            if action_current:
+                actions.append(action_current)
             actions.insert(0, '(')
             actions.append(')')
-            full_actions = actions.copy()
-            while len(full_actions) != 1:
+            actions_full = actions.copy()
+            while len(actions_full) != 1:
                 step = 0
                 bracket_flag = True
-                while step < len(full_actions):
+                while step < len(actions_full):
                     if bracket_flag:
-                        if full_actions[step] == ')':
+                        if actions_full[step] == ')':
                             step_right = step
                             actions.clear()
-                            substep = 0
-                            while step_left + substep <= step_right:
-                                actions.append(full_actions[step_left])
-                                del full_actions[step_left]
-                                substep += 1
+                            step_sub = 0
+                            while step_left + step_sub <= step_right:
+                                actions.append(actions_full[step_left])
+                                del actions_full[step_left]
+                                step_sub += 1
                             bracket_flag = False
                             del actions[0]
                             del actions[step_right - step_left - 1]
-                        elif full_actions[step] == '(':
+                        elif actions_full[step] == '(':
                             step_left = step
                     step += 1
                 actions_copy = actions
@@ -78,16 +78,15 @@ def calc(query):
                         del actions_copy[step]
                         step -= 2
                     elif actions[step] == '/':
-                        if float(actions_copy[step + 1]) != 0:
+                        try:
                             actions_copy[step - 1] = (float(actions_copy[step - 1]) /
                                                       float(actions_copy[step + 1]))
                             del actions_copy[step]
                             del actions_copy[step]
                             step -= 2
-                        else:
-                            res = '*** Ошибка: деление на ноль ***'
-                            outputlog(res)
-                            return res
+                        except ZeroDivisionError:
+                            logger.error(f'*Калькулятор* Ошибка. Деление на 0')
+                            return ('Ошибка. Деление на 0')
                     step += 1
                 step = 0
                 actions = actions_copy
@@ -106,63 +105,70 @@ def calc(query):
                         step -= 2
                     step += 1
                 try:
-                    full_actions.insert(step_left, actions_copy[0])
+                    actions_full.insert(step_left, actions_copy[0])
                 except IndexError:
-                    res = 'Ошибка ввода. Введите выражение аналогично примеру'
-                    outputlog(res)
-                    return res
-            res = float(full_actions[0])
-            outputlog(res)
+                    logger.error(f'*Калькулятор* Ошибка ввода. '
+                                 f'Введите выражение аналогично примеру')
+                    return 'Ошибка ввода. Введите выражение аналогично примеру'
+            res = float(actions_full[0])
+            logger.info(f'*Калькулятор* Успешно. Результат: {res}')
             return res
 
 
-def rand(randrange, banlist):
-    from history.logs_script import inputlog, outputlog
+def rand(rand_range, ban_list):
 
-    inputlog(randrange, banlist)
+    logger.info(f'Введено: rand_range= {rand_range}, ban_list= {ban_list}')
 
-    if len(randrange.split()) > 2:
-        res = 'Ошибка ввода(введено больше двух чисел). Введите диапазон согласно примеру'
-        outputlog(res)
-        return res
+    if len(rand_range.split()) > 2:
+        logger.error('*Генератор* Ошибка ввода(введено больше двух чисел). '
+                     'Введите диапазон согласно примеру')
+        return ('Ошибка ввода(введено больше двух чисел). '
+                'Введите диапазон согласно примеру')
     else:
-        for i in randrange:
-            if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-                res = 'Ошибка ввода(получены не числовые значения). Введите диапазон согласно примеру'
-                outputlog(res)
-                return res
-    for i in banlist:
-        if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-            res = 'Ошибка ввода(запрещённые числа). Введите диапазон согласно примеру'
-            outputlog(res)
-            return res
+        for i in rand_range:
+            if random_check(i):
+                logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
+                             'Введите диапазон согласно примеру')
+                return ('Ошибка ввода(получены не числовые значения). '
+                        'Введите диапазон согласно примеру')
+
+    for i in ban_list:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(запрещённые числа). '
+                         'Введите диапазон согласно примеру')
+            return ('Ошибка ввода(запрещённые числа). '
+                    'Введите диапазон согласно примеру')
 
     from random import randint
+
     try:
-        res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
+        res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
     except:
-        res = 'Ошибка ввода (Получен пустой диапазон). Расположите числа по возрастанию'
-        outputlog(res)
-        return res
-    counter_range = 0
-    counter_banlist = 0
-    for i in range(int(randrange.split()[0]), int(randrange.split()[1]) + 1):
-        counter_range += 1
-        if i in list(map(int, banlist.split())):
-            counter_banlist += 1
-    if counter_range == counter_banlist:
-        res = 'Ошибка ввода (Запрещены все значения)'
-        outputlog(res)
-        return res
-    while res in list(map(int, banlist.split())):
-        res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
-        outputlog(res)
+        logger.error('*Генератор* Ошибка ввода. '
+                     'Получен пустой диапазон.')
+        return ('Ошибка ввода (Получен пустой диапазон). '
+                'Расположите числа по возрастанию')
+
+    counter_rand_range = 0
+    counter_ban_list = 0
+
+    for i in range(int(rand_range.split()[0]), int(rand_range.split()[1]) + 1):
+        counter_rand_range += 1
+        if i in list(map(int, ban_list.split())):
+            counter_ban_list += 1
+
+    if counter_rand_range == counter_ban_list:
+        logger.error('*Генератор* Ошибка ввода. Запрещены все значения')
+        return 'Ошибка ввода (Запрещены все значения)'
+
+    while res in list(map(int, ban_list.split())):
+        res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
+
+    logger.info(f'Успешно, число: {res}')
     return res
 
 
 def mode_check(choise):
-    from history.logs_script import inputlog
-    inputlog(choise)
     if not choise.isnumeric():
         return False
 
@@ -171,3 +177,4 @@ def mode_check(choise):
 
     else:
         return int(choise)
+
