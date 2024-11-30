@@ -1,4 +1,10 @@
 from history.logs_script import *
+from errors.errors import *
+
+
+def notify_user(a):
+    return print(a)
+
 
 def random_check(test_value):
     if (not test_value.isnumeric() and test_value != ' ' and
@@ -6,6 +12,8 @@ def random_check(test_value):
         return True
     else:
         return False
+
+
 def calc(query):
     logger.info(f'*Калькулятор* Введено: {query}')
     nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
@@ -16,7 +24,7 @@ def calc(query):
 
     if query.count('(') != query.count(')'):
         logger.error(f'Ошибка ввода. Закройте все скобки')
-        return 'Ошибка ввода. Закройте все скобки'
+        raise BracketError
 
     while query != 'exit':
         if query == 'exit':
@@ -116,7 +124,6 @@ def calc(query):
 
 
 def rand(rand_range, ban_list):
-
     logger.info(f'Введено: rand_range= {rand_range}, ban_list= {ban_list}')
 
     if len(rand_range.split()) > 2:
@@ -177,4 +184,3 @@ def mode_check(choise):
 
     else:
         return int(choise)
-
