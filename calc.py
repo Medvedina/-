@@ -1,50 +1,75 @@
-print('***Турбо-калькулятор 3000***\n')
+def main():
+    from service.service_functions import calc, mode_check, rand, notify_user
+    import errors.errors as er
 
-from service.service_functions import mode_check
+    notify_user('***Турбо-калькулятор 3000***\n')
 
-while True:
-    print('Выберите режим:')
-    print('0 - выйти')
-    print('1 - калькулятор')
-    print('2 - генератор случайных чисел')
+    while True:
+        notify_user('Выберите режим:')
+        notify_user('0 - выйти')
+        notify_user('1 - калькулятор')
+        notify_user('2 - генератор случайных чисел')
 
-    choise = input()
+        choice = input()
 
 
-    if not mode_check(choise) and choise != '0':
-        print('Нет такого режима\n')
-        continue
+        if mode_check(choice) is False and choice != '0':
+            notify_user('Нет такого режима\n')
+            continue
 
-    elif mode_check(choise) == 0:
-        print('Завершение работы')
-        break
+        elif mode_check(choice) == 0:
+            notify_user('Завершение работы')
+            break
 
-    elif mode_check(choise) == 1:
-        from service.service_functions import calc
-        print('Калькулятор')
-        print('Введите выражение, (например: (13 + 2 * 3 / (32 + 5) + 2 ^ 5) '
-              'или exit для выхода)')
-        query = input()
-        while query != 'exit':
-            result = str(calc(query))
-            print('Ответ:', result)
+        elif mode_check(choice) == 1:
+            notify_user('Калькулятор')
+            notify_user('Введите выражение, (например: (13 + 2 * 3 / (32 + 5) + 2 ^ 5) '
+                  'или exit для выхода)')
             query = input()
+            while query != 'exit':
+                try:
+                    result = str(calc(query))
+                    notify_user(f'Ответ: {result}')
+                except er.BracketError as e:
+                    notify_user(f'Ошибка ввода. Закройте все скобки ({e.__class__.__name__})')
+                    query = input()
+                    continue
+                except er.DivZero as e:
+                    notify_user(f'Ошибка. Деление на 0 ({e.__class__.__name__})')
+                except er.InputError as e:
+                    notify_user(f'Ошибка ввода. Введите выражение аналогично примеру'
+                                     f'({e.__class__.__name__})')
+                query = input()
 
-    elif mode_check(choise) == 2:
-        from service.service_functions import rand
-        print('Генератор случайных чисел')
-        while True:
-            print('\nВведите диапазон генерируемого числа через '
-                  'пробел (1 100)    exit - выход')
-            randrange = input()
-            if randrange != 'exit':
-                print('Введите значения, которых генератор должен избегать, (2 31 3), '
-                      'Если таких значений нет, нажмите Enter     exit - выход')
-                banlist = input()
-                if banlist != 'exit':
-                    result = rand(randrange, banlist)
-                    print('\n---- Число:', result)
+        elif mode_check(choice) == 2:
+            notify_user('Генератор случайных чисел')
+            while True:
+                notify_user('\nВведите диапазон генерируемого числа через '
+                      'пробел (1 100)    exit - выход')
+                rand_range = input()
+                if rand_range != 'exit':
+                    notify_user('Введите значения, которых генератор должен избегать, (2 31 3), '
+                          'Если таких значений нет, нажмите Enter     exit - выход')
+                    ban_list = input()
+                    if ban_list != 'exit':
+                        try:
+                            result = rand(rand_range, ban_list)
+                            notify_user(f'\nЧисло: {result}')
+                        except er.RangeError as e:
+                            notify_user(f'Ошибка ввода(введено больше двух чисел). '
+                                        f'Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.InvalidNumberError as e:
+                            notify_user(f'Ошибка ввода(получены не числовые значения).'
+                                        f'Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.BanListRangeError as e:
+                            notify_user(f'Ошибка ввода(избегаемые числа). Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.InputError as e:
+                            notify_user(f'Ошибка ввода. Получен пустой диапазон. ({e.__class__.__name__})')
+                        except er.BanListError as e:
+                            notify_user(f'Ошибка ввода. Запрещены все значения. ({e.__class__.__name__})')
+                    else:
+                        break
                 else:
                     break
-            else:
-                break
+if __name__ == '__main__':
+    main()
