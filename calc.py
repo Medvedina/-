@@ -31,12 +31,16 @@ def main():
                     result = str(calc(query))
                     notify_user(f'Ответ: {result}')
                 except er.BracketError as e:
-                    notify_user('Ошибка ввода. Закройте все скобки')
-                    query = 'exit'
+                    notify_user(f'Ошибка ввода. Закройте все скобки ({e.__class__.__name__})')
+                    query = input()
                     continue
-                #except er.DivZero(ZeroDivisionError) as e:
-                    #pass
+                except er.DivZero as e:
+                    notify_user(f'Ошибка. Деление на 0 ({e.__class__.__name__})')
+                except er.InputError as e:
+                    notify_user(f'Ошибка ввода. Введите выражение аналогично примеру'
+                                     f'({e.__class__.__name__})')
                 query = input()
+
         elif mode_check(choice) == 2:
             notify_user('Генератор случайных чисел')
             while True:
@@ -48,8 +52,21 @@ def main():
                           'Если таких значений нет, нажмите Enter     exit - выход')
                     ban_list = input()
                     if ban_list != 'exit':
-                        result = rand(rand_range, ban_list)
-                        notify_user(f'\nЧисло: {result}')
+                        try:
+                            result = rand(rand_range, ban_list)
+                            notify_user(f'\nЧисло: {result}')
+                        except er.RangeError as e:
+                            notify_user(f'Ошибка ввода(введено больше двух чисел). '
+                                        f'Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.InvalidNumberError as e:
+                            notify_user(f'Ошибка ввода(получены не числовые значения).'
+                                        f'Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.BanListRangeError as e:
+                            notify_user(f'Ошибка ввода(избегаемые числа). Введите диапазон согласно примеру. ({e.__class__.__name__})')
+                        except er.InputError as e:
+                            notify_user(f'Ошибка ввода. Получен пустой диапазон. ({e.__class__.__name__})')
+                        except er.BanListError as e:
+                            notify_user(f'Ошибка ввода. Запрещены все значения. ({e.__class__.__name__})')
                     else:
                         break
                 else:
