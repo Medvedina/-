@@ -1,4 +1,10 @@
 from history.logs_script import *
+from errors.errors import *
+
+
+def notify_user(*args):
+    return print(*args)
+
 
 def random_check(test_value):
     if (not test_value.isnumeric() and test_value != ' ' and
@@ -6,6 +12,8 @@ def random_check(test_value):
         return True
     else:
         return False
+
+
 def calc(query):
     logger.info(f'*Калькулятор* Введено: {query}')
     nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
@@ -13,10 +21,18 @@ def calc(query):
     actions = []
     actions_full = []
     action_current = ''
+    countable = False
+
+    for char in query:
+        if char in nums:
+            countable = True
+
+    if countable is False:
+        raise InputError
 
     if query.count('(') != query.count(')'):
         logger.error(f'Ошибка ввода. Закройте все скобки')
-        return 'Ошибка ввода. Закройте все скобки'
+        raise BracketError
 
     while query != 'exit':
         if query == 'exit':
@@ -86,7 +102,7 @@ def calc(query):
                             step -= 2
                         except ZeroDivisionError:
                             logger.error(f'*Калькулятор* Ошибка. Деление на 0')
-                            return ('Ошибка. Деление на 0')
+                            raise DivZero
                     step += 1
                 step = 0
                 actions = actions_copy
@@ -109,45 +125,40 @@ def calc(query):
                 except IndexError:
                     logger.error(f'*Калькулятор* Ошибка ввода. '
                                  f'Введите выражение аналогично примеру')
-                    return 'Ошибка ввода. Введите выражение аналогично примеру'
+                    raise InputError
             res = float(actions_full[0])
             logger.info(f'*Калькулятор* Успешно. Результат: {res}')
             return res
 
 
 def rand(rand_range, ban_list):
-
     logger.info(f'Введено: rand_range= {rand_range}, ban_list= {ban_list}')
 
     if len(rand_range.split()) > 2:
         logger.error('*Генератор* Ошибка ввода(введено больше двух чисел). '
                      'Введите диапазон согласно примеру')
-        return ('Ошибка ввода(введено больше двух чисел). '
-                'Введите диапазон согласно примеру')
+        raise RangeError
     else:
         for i in rand_range:
             if random_check(i):
                 logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
                              'Введите диапазон согласно примеру')
-                return ('Ошибка ввода(получены не числовые значения). '
-                        'Введите диапазон согласно примеру')
+                raise InvalidNumberError
 
     for i in ban_list:
         if random_check(i):
-            logger.error('*Генератор* Ошибка ввода(запрещённые числа). '
+            logger.error('*Генератор* Ошибка ввода(избегаемые числа). '
                          'Введите диапазон согласно примеру')
-            return ('Ошибка ввода(запрещённые числа). '
-                    'Введите диапазон согласно примеру')
+            raise BanListRangeError
 
     from random import randint
 
     try:
         res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
-    except:
+    except IndexError:
         logger.error('*Генератор* Ошибка ввода. '
                      'Получен пустой диапазон.')
-        return ('Ошибка ввода (Получен пустой диапазон). '
-                'Расположите числа по возрастанию')
+        raise InputError
 
     counter_rand_range = 0
     counter_ban_list = 0
@@ -159,7 +170,7 @@ def rand(rand_range, ban_list):
 
     if counter_rand_range == counter_ban_list:
         logger.error('*Генератор* Ошибка ввода. Запрещены все значения')
-        return 'Ошибка ввода (Запрещены все значения)'
+        raise BanListError
 
     while res in list(map(int, ban_list.split())):
         res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
@@ -177,4 +188,3 @@ def mode_check(choise):
 
     else:
         return int(choise)
-
