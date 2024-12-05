@@ -131,20 +131,19 @@ def calc(query):
             return res
 
 
-def rand(rand_range, ban_list):
-    logger.info(f'Введено: rand_range= {rand_range}, ban_list= {ban_list}')
+def rand(rand_range_start, rand_range_finish, ban_list):
+    logger.info(f'Введено: Начало - {rand_range_start}, Конец - {rand_range_finish}, запрещено = {ban_list}')
 
-    if len(rand_range.split()) > 2:
-        logger.error('*Генератор* Ошибка ввода(введено больше двух чисел). '
-                     'Введите диапазон согласно примеру')
-        raise RangeError
-    else:
-        for i in rand_range:
-            if random_check(i):
-                logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
-                             'Введите диапазон согласно примеру')
-                raise InvalidNumberError
-
+    for i in rand_range_start:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
+                         'Введите диапазон согласно примеру')
+            raise InvalidNumberError
+    for i in rand_range_finish:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
+                         'Введите диапазон согласно примеру')
+            raise InvalidNumberError
     for i in ban_list:
         if random_check(i):
             logger.error('*Генератор* Ошибка ввода(избегаемые числа). '
@@ -154,8 +153,8 @@ def rand(rand_range, ban_list):
     from random import randint
 
     try:
-        res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
-    except IndexError:
+        res = randint(int(rand_range_start), int(rand_range_finish))
+    except ValueError:
         logger.error('*Генератор* Ошибка ввода. '
                      'Получен пустой диапазон.')
         raise InputError
@@ -163,7 +162,7 @@ def rand(rand_range, ban_list):
     counter_rand_range = 0
     counter_ban_list = 0
 
-    for i in range(int(rand_range.split()[0]), int(rand_range.split()[1]) + 1):
+    for i in range(int(rand_range_start), int(rand_range_finish) + 1):
         counter_rand_range += 1
         if i in list(map(int, ban_list.split())):
             counter_ban_list += 1
@@ -173,7 +172,7 @@ def rand(rand_range, ban_list):
         raise BanListError
 
     while res in list(map(int, ban_list.split())):
-        res = randint(int(rand_range.split()[0]), int(rand_range.split()[1]))
+        res = randint(int(rand_range_start), int(rand_range_finish))
 
     logger.info(f'Успешно, число: {res}')
     return res
