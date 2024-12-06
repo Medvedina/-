@@ -24,3 +24,7 @@ class BanListError(Exception):
 
 class InvalidNumberError(Exception):
     pass
+
+
+class PrefixError(Exception):
+    pass
