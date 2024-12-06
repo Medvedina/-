@@ -7,13 +7,19 @@ def main():
     def mode_change():
         button_mode_rand.place_forget()
         button_mode_calc.place_forget()
+        button_mode_ipcalc.place_forget()
+        button_mode_numsys.place_forget()
         button_clear_logs.place_forget()
         entry_logs_state.place_forget()
         logs_clear_success.place_forget()
 
-    def notify_user(answer_box, answer):
+    def notify_user(answer_box, answer, output_mode='append'):
         answer_box.configure(state=ctk.NORMAL)
-        answer_box.insert(1.0, answer)
+        if output_mode == 'append':
+            answer_box.insert(1.0, answer)
+        elif output_mode == 'write':
+            answer_box.delete(1.0, 'end')
+            answer_box.insert('end', answer)
         answer_box.configure(state=ctk.DISABLED)
 
     def update_logs_size():
@@ -26,6 +32,8 @@ def main():
         button_mode_calc.place(x=30, y=60)
         button_mode_rand.place(x=210, y=60)
         button_clear_logs.place(x=30, y=300)
+        button_mode_ipcalc.place(x=30, y=130)
+        button_mode_numsys.place(x=210, y=130)
         entry_logs_state.place(x=120, y=300)
         update_logs_size()
 
@@ -35,7 +43,7 @@ def main():
     def mode_rand():
         mode_change()
 
-        def checkbox_function():
+        def checkbox_function_rand():
             if not checkbox_flag.get():
                 entry_ban.delete(0, 'end')
                 entry_ban.configure(state=ctk.DISABLED)
@@ -94,14 +102,14 @@ def main():
         entry_ban.bind('<Return>', key_pressed_rand)
 
         checkbox_flag = ctk.BooleanVar()
-        checkbox_ban = ctk.CTkCheckBox(window, text='Включено', variable=checkbox_flag, command=checkbox_function)
+        checkbox_ban = ctk.CTkCheckBox(window, text='Включено', variable=checkbox_flag, command=checkbox_function_rand)
         checkbox_ban.place(x=250, y=175)
         checkbox_ban.select()
 
         button_rand = ctk.CTkButton(window, width=100, height=30, text='Сгенерировать', command=randomize)
         button_rand.place(x=250, y=360)
 
-        answer_box = ctk.CTkTextbox(window, height=100, width=300)
+        answer_box = ctk.CTkTextbox(window, height=100, width=300, state=ctk.DISABLED)
         answer_box.place(x=30, y=220)
 
         button_back = ctk.CTkButton(window, text='Назад', width=100, height=30,
@@ -150,12 +158,75 @@ def main():
         button_calc.place(x=250, y=360)
         entry_calc.bind('<Return>', key_pressed_calc)
 
-        answer_box = ctk.CTkTextbox(window, height=170, width=340)
+        answer_box = ctk.CTkTextbox(window, height=170, width=340, state=ctk.DISABLED)
         answer_box.place(x=30, y=160)
 
         button_back = ctk.CTkButton(window, width=100, height=30, text='Назад',
                                      command=lambda: mode_button_menu(button_calc, entry_calc, answer_box, button_back,
                                                                       label_calc, label_answer, label_example))
+        button_back.place(x=30, y=360)
+
+    def mode_ipcalc():
+        mode_change()
+
+        def checkbox_function_ipcalc():
+            if not checkbox_flag.get():
+                mask_flag = 'prefix'
+                entry_mask.configure(width=30)
+                label_mask.configure(text='Префикс маски подсети:')
+                checkbox_mask.configure(text='Префикс', width=70)
+            else:
+                mask_flag = 'decimal'
+                entry_mask.configure(width=140)
+                label_mask.configure(text='Маска подсети:')
+                checkbox_mask.configure(text='Десятичный')
+            return mask_flag
+
+        def key_pressed_ipcalc(event):
+            calculate_ip()
+
+        def calculate_ip():
+            try:
+                result = IP(entry_ip.get(), entry_mask.get(), str(checkbox_function_ipcalc()))
+                notify_user(answer_box, f'Число: {result}\n', 'write')
+            except ipaddress.NetmaskValueError as e:
+                notify_user(answer_box, f'Ошибка ввода.(Некорректная маска подсети). ({e.__class__.__name__})\n', 'write')
+            except ipaddress.AddressValueError as e:
+                notify_user(answer_box, f'Ошибка ввода.(Некорректный ip-адрес). ({e.__class__.__name__})\n', 'write')
+            except PrefixError as e:
+                notify_user(answer_box, f'Ошибка ввода.(Некорректный префикс маски подсети). ({e.__class__.__name__})\n', 'write')
+
+        label_ip = ctk.CTkLabel(window, text='Ip-адрес:', font=('Arial', 12, 'bold'))
+        label_ip.place(x=30, y=25)
+
+        label_mask = ctk.CTkLabel(window, text='Префикс маски подсети:', font=('Arial', 12, 'bold'))
+        label_mask.place(x=230, y=25)
+
+        label_answer = ctk.CTkLabel(window, text='Рассчёт:', font=('Arial', 12, 'bold'))
+        label_answer.place(x=30, y=150)
+
+        entry_ip = ctk.CTkEntry(window, width=170)
+        entry_ip.place(x=30, y=60)
+        entry_ip.bind('<Return>', key_pressed_ipcalc)
+
+        entry_mask = ctk.CTkEntry(window, width=30)
+        entry_mask.place(x=230, y=60)
+        entry_mask.bind('<Return>', key_pressed_ipcalc)
+
+        checkbox_flag = ctk.BooleanVar(value=False)
+        checkbox_mask = ctk.CTkCheckBox(window, text='Префикс', variable=checkbox_flag, command=checkbox_function_ipcalc)
+        checkbox_mask.place(x=250, y=100)
+
+        button_rand = ctk.CTkButton(window, width=100, height=30, text='Рассчитать', command=calculate_ip)
+        button_rand.place(x=250, y=360)
+
+        answer_box = ctk.CTkTextbox(window, height=150, width=366, state=ctk.DISABLED)
+        answer_box.place(x=17, y=180)
+
+        button_back = ctk.CTkButton(window, text='Назад', width=100, height=30,
+                                    command=lambda: mode_button_menu(button_rand, entry_ip, answer_box, button_back,
+                                                                     label_ip, label_answer, checkbox_mask,
+                                                                     entry_mask, label_mask))
         button_back.place(x=30, y=360)
 
     def clear_logs(entry_logs_state):
@@ -174,6 +245,12 @@ def main():
 
     button_mode_rand = ctk.CTkButton(window, text='Рандомайзер', command=mode_rand, width=150, height=40)
     button_mode_rand.place(x=210, y=60)
+
+    button_mode_ipcalc = ctk.CTkButton(window, text='Калькулятор IP', command=mode_ipcalc, width=150, height=40)
+    button_mode_ipcalc.place(x=30, y=130)
+
+    button_mode_numsys = ctk.CTkButton(window, text='Системы счисления', width=150, height=40, state=ctk.DISABLED)  #Доделать
+    button_mode_numsys.place(x=210, y=130)
 
     entry_logs_state = ctk.CTkEntry(window, width=240)
     entry_logs_state.place(x=120, y=300)
