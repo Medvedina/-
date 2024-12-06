@@ -1,5 +1,6 @@
 from history.logs_script import *
 from errors.errors import *
+import ipaddress
 
 
 def notify_user(*args):
@@ -177,13 +178,75 @@ def rand(rand_range_start, rand_range_finish, ban_list):
     logger.info(f'Успешно, число: {res}')
     return res
 
+class IP:
+    def __init__(self, ip_address, subnet_mask, mask_flag):
+        self.ip_address = ip_address
+        if mask_flag == 'prefix':
+            self.subnet_mask_index = subnet_mask
+            self.subnet_mask = self.prefix_to_decimal(self.subnet_mask_index)
 
-def mode_check(choise):
-    if not choise.isnumeric():
-        return False
+        elif mask_flag == 'decimal':
+            self.subnet_mask = subnet_mask
+            self.subnet_mask_index = self.get_mask_index(subnet_mask)
 
-    elif int(choise) >= 3:
-        return False
+        self.network_address = self.get_network_address(ip_address, subnet_mask)
+        self.binary_address = self.convert_to_binary(ip_address)
+        self.host_count = self.calculate_host_count(subnet_mask)
+    def convert_to_binary(self, ip_address):
+        try:
+            octets = ip_address.split('.')
+            binary_octets = [format(int(octet), '08b') for octet in octets]
+            return '.'.join(binary_octets)
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__}')
+            raise ipaddress.AddressValueError
 
-    else:
-        return int(choise)
+    def calculate_host_count(self, subnet_mask):
+        try:
+            if subnet_mask.count('.') == 0:
+                return 2**(32 - int(subnet_mask)) - 2
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректную маску подсети ({e.__class__.__name__}')
+            raise ipaddress.NetmaskValueError
+        else:
+            mask_bits = sum(bin(int(octet)).count('1') for octet in subnet_mask.split('.'))
+            return (2 ** (32 - mask_bits)) - 2
+
+    def get_network_address(self, ip_address, subnet_mask):
+        try:
+            network = ipaddress.IPv4Network(f'{ip_address}/{subnet_mask}', strict=False)
+            return str(network.network_address)
+        except ipaddress.NetmaskValueError as e:
+            logger.error(f'Ошибка. Введите корректную маску подсети ({e.__class__.__name__})')
+            raise ipaddress.NetmaskValueError
+
+        except ipaddress.AddressValueError as e:
+            logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__})')
+            raise ipaddress.AddressValueError
+
+    def get_mask_index(self, subnet_mask):
+        if subnet_mask.count('.') < 3:
+            logger.error(f'Ошибка. Введите корректную маску подсети (NetmaskValueError)')
+            raise ipaddress.NetmaskValueError
+        octets = subnet_mask.split('.')
+        binary_octets = [format(int(octet), '08b') for octet in octets]
+        return str(binary_octets).count('1')
+
+    def prefix_to_decimal(self, prefix):
+        try:
+            int(prefix)
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректный префикс маски подсети ({e.__class__.__name__}')
+            raise PrefixError
+
+        if not (0 <= int(prefix) <= 32):
+            logger.error(f'Ошибка. Префикс длиннее 32. (PrefixError)')
+            raise PrefixError
+
+        mask_bin = '1' * int(prefix) + '0' * (32 - int(prefix))
+        mask_decimal = [str(int(mask_bin[i:i + 8], 2)) for i in range(0, 32, 8)]
+        return '.'.join(mask_decimal)
+
+    def __str__(self):
+        return (f' IP-адрес: {self.ip_address}\n Двоичный адрес: {self.binary_address}\n Маска подсети: {self.subnet_mask}\n Индекс маски подсети: {self.subnet_mask_index}\n '
+                f'Число хостов: {self.host_count}\n Адрес сети: {self.network_address}\n')
