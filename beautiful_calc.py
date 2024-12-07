@@ -12,6 +12,7 @@ def main():
         button_clear_logs.place_forget()
         entry_logs_state.place_forget()
         logs_clear_success.place_forget()
+        theme_menu.place_forget()
 
     def notify_user(answer_box, answer, output_mode='append'):
         answer_box.configure(state=ctk.NORMAL)
@@ -35,6 +36,7 @@ def main():
         button_mode_ipcalc.place(x=30, y=130)
         button_mode_numsys.place(x=210, y=130)
         entry_logs_state.place(x=120, y=300)
+        theme_menu.place(x=240, y=350)
         update_logs_size()
 
         for i in args:
@@ -117,6 +119,7 @@ def main():
                                                                       label_start, label_answer, checkbox_ban, entry_ban,
                                                                       label_ban, entry_finish, label_finish))
         button_back.place(x=30, y=360)
+        mode_theme_change(button_rand, button_back, checkbox_ban)
 
     def mode_calc():
         mode_change()
@@ -165,6 +168,7 @@ def main():
                                      command=lambda: mode_button_menu(button_calc, entry_calc, answer_box, button_back,
                                                                       label_calc, label_answer, label_example))
         button_back.place(x=30, y=360)
+        mode_theme_change(button_calc, button_back)
 
     def mode_ipcalc():
         mode_change()
@@ -196,6 +200,7 @@ def main():
             except PrefixError as e:
                 notify_user(answer_box, f'Ошибка ввода.(Некорректный префикс маски подсети). ({e.__class__.__name__})\n', 'write')
 
+
         label_ip = ctk.CTkLabel(window, text='Ip-адрес:', font=('Arial', 12, 'bold'))
         label_ip.place(x=30, y=25)
 
@@ -217,17 +222,18 @@ def main():
         checkbox_mask = ctk.CTkCheckBox(window, text='Префикс', variable=checkbox_flag, command=checkbox_function_ipcalc)
         checkbox_mask.place(x=250, y=100)
 
-        button_rand = ctk.CTkButton(window, width=100, height=30, text='Рассчитать', command=calculate_ip)
-        button_rand.place(x=250, y=360)
+        button_ipcalc = ctk.CTkButton(window, width=100, height=30, text='Рассчитать', command=calculate_ip)
+        button_ipcalc.place(x=250, y=360)
 
         answer_box = ctk.CTkTextbox(window, height=150, width=366, state=ctk.DISABLED)
         answer_box.place(x=17, y=180)
 
         button_back = ctk.CTkButton(window, text='Назад', width=100, height=30,
-                                    command=lambda: mode_button_menu(button_rand, entry_ip, answer_box, button_back,
+                                    command=lambda: mode_button_menu(button_ipcalc, entry_ip, answer_box, button_back,
                                                                      label_ip, label_answer, checkbox_mask,
                                                                      entry_mask, label_mask))
         button_back.place(x=30, y=360)
+        mode_theme_change(button_ipcalc, button_back, checkbox_mask)
 
     def clear_logs(entry_logs_state):
         with open('history/logs.txt', 'w') as f:
@@ -235,10 +241,41 @@ def main():
         update_logs_size()
         logs_clear_success.place(x=240, y=360)
 
+    def theme_change(choice):
+        def theme_color_change_dark(*args):
+            for widget in args:
+                widget.configure(fg_color='#3B8ED0')
+        def theme_color_change_light(*args):
+            for widget in args:   #36719F
+                widget.configure(fg_color='#303A52')
+        if choice == 'Тёмная тема':
+            theme_menu.configure(button_color='#36719F', fg_color='#3B8ED0')
+            ctk.set_appearance_mode("dark")
+            theme_color_change_dark(button_mode_rand, button_mode_numsys, button_mode_ipcalc, button_clear_logs,
+                                    button_mode_calc)
+        elif choice == 'Светлая тема':
+            theme_menu.configure(button_color='#596174', fg_color='#303A52')
+            ctk.set_appearance_mode("light")
+            theme_color_change_light(button_mode_rand, button_mode_numsys, button_mode_ipcalc, button_clear_logs,
+                                    button_mode_calc)
+
+    def mode_theme_change(*args):
+        if ctk.get_appearance_mode() == 'Light':
+            for widget in args:
+                widget.configure(fg_color='#303A52')
+
+    ctk.set_appearance_mode("dark")
+
     window = ctk.CTk()
     window.title('Турбо-калькулятор 3000')
     window.geometry("400x400")
     window.resizable(width=False, height=False)
+
+    theme_menu_var = ctk.StringVar(value="Тёмная тема")
+    theme_menu = ctk.CTkOptionMenu(window, values=["Светлая тема", "Тёмная тема"],
+                                             command=theme_change,
+                                             variable=theme_menu_var)
+    theme_menu.place(x=240, y=350)
 
     button_mode_calc = ctk.CTkButton(window, text='Калькулятор', command=mode_calc, width=150, height=40)
     button_mode_calc.place(x=30, y=60)
