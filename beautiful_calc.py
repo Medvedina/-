@@ -173,17 +173,16 @@ def main():
     def mode_ipcalc():
         mode_change()
 
-        def checkbox_function_ipcalc():
-            if not checkbox_flag.get():
+        def menu_function_ipcalc(choice):
+            global mask_flag
+            if choice == 'Префикс':
                 mask_flag = 'prefix'
                 entry_mask.configure(width=30)
                 label_mask.configure(text='Префикс маски подсети:')
-                checkbox_mask.configure(text='Префикс', width=70)
-            else:
+            elif choice == 'Десятичный':
                 mask_flag = 'decimal'
                 entry_mask.configure(width=140)
                 label_mask.configure(text='Маска подсети:')
-                checkbox_mask.configure(text='Десятичный')
             return mask_flag
 
         def key_pressed_ipcalc(event):
@@ -191,7 +190,7 @@ def main():
 
         def calculate_ip():
             try:
-                result = IP(entry_ip.get(), entry_mask.get(), str(checkbox_function_ipcalc()))
+                result = IP(entry_ip.get(), entry_mask.get(), str(menu_function_ipcalc(mask_menu_var)))
                 notify_user(answer_box, f'Число: {result}\n', 'write')
             except ipaddress.NetmaskValueError as e:
                 notify_user(answer_box, f'Ошибка ввода.(Некорректная маска подсети). ({e.__class__.__name__})\n', 'write')
@@ -218,9 +217,11 @@ def main():
         entry_mask.place(x=230, y=60)
         entry_mask.bind('<Return>', key_pressed_ipcalc)
 
-        checkbox_flag = ctk.BooleanVar(value=False)
-        checkbox_mask = ctk.CTkCheckBox(window, text='Префикс', variable=checkbox_flag, command=checkbox_function_ipcalc)
-        checkbox_mask.place(x=250, y=100)
+        mask_menu_var = ctk.Variable(value='Префикс')
+        menu_mask = ctk.CTkOptionMenu(window, values=["Префикс", "Десятичный"],
+                                             command=menu_function_ipcalc,
+                                             variable=mask_menu_var)
+        menu_mask.place(x=250, y=100)
 
         button_ipcalc = ctk.CTkButton(window, width=100, height=30, text='Рассчитать', command=calculate_ip)
         button_ipcalc.place(x=250, y=360)
@@ -230,10 +231,12 @@ def main():
 
         button_back = ctk.CTkButton(window, text='Назад', width=100, height=30,
                                     command=lambda: mode_button_menu(button_ipcalc, entry_ip, answer_box, button_back,
-                                                                     label_ip, label_answer, checkbox_mask,
+                                                                     label_ip, label_answer, menu_mask,
                                                                      entry_mask, label_mask))
         button_back.place(x=30, y=360)
-        mode_theme_change(button_ipcalc, button_back, checkbox_mask)
+        mode_theme_change(button_ipcalc, button_back, menu_mask)
+        if ctk.get_appearance_mode() == 'Light':
+            menu_mask.configure(button_color='#596174')
 
     def clear_logs(entry_logs_state):
         with open('history/logs.txt', 'w') as f:
@@ -246,7 +249,7 @@ def main():
             for widget in args:
                 widget.configure(fg_color='#3B8ED0')
         def theme_color_change_light(*args):
-            for widget in args:   #36719F
+            for widget in args:
                 widget.configure(fg_color='#303A52')
         if choice == 'Тёмная тема':
             theme_menu.configure(button_color='#36719F', fg_color='#3B8ED0')
