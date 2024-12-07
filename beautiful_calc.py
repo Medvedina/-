@@ -239,7 +239,7 @@ def main():
         with open('history/logs.txt', 'w') as f:
             f.close()
         update_logs_size()
-        logs_clear_success.place(x=240, y=360)
+        logs_clear_success.place(x=30, y=360)
 
     def theme_change(choice):
         def theme_color_change_dark(*args):
