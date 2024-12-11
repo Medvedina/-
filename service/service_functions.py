@@ -194,10 +194,8 @@ def numsys(original_system, number):
 
     elif original_system == 'binary':
         try:
-            binary = int(number, 2)
-            decimal = 0
-            for index, bit in enumerate(number[::-1]):
-                decimal += int(bit) * (2 ** index)
+            binary = number
+            decimal = int(number, 2)
             octal = oct(decimal)[2:]
             hexadecimal = hex(decimal)[2:]
             logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
