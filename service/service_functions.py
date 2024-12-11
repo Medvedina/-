@@ -178,20 +178,76 @@ def rand(rand_range_start, rand_range_finish, ban_list):
     logger.info(f'Успешно, число: {res}')
     return res
 
+def numsys(original_system, number):
+    logger.info(f'ВВОД: {original_system}, {number}')
+    if original_system == 'decimal':
+        try:
+            decimal = int(number)
+            binary = bin(int(number))[2:]
+            octal = oct(int(number))[2:]
+            hexadecimal = hex(int(number))[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+    elif original_system == 'binary':
+        try:
+            binary = int(number, 2)
+            decimal = 0
+            for index, bit in enumerate(number[::-1]):
+                decimal += int(bit) * (2 ** index)
+            octal = oct(decimal)[2:]
+            hexadecimal = hex(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+    elif original_system == 'octal':
+        try:
+            octal = number
+            decimal = 0
+            for index, bit in enumerate(number[::-1]):
+                decimal += int(bit) * (8 ** index)
+            binary = bin(decimal)[2:]
+            hexadecimal = hex(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+    elif original_system == 'hexadecimal':
+        try:
+            hexadecimal = number.lower()
+            decimal = int(number, 16)
+            binary = bin(decimal)[2:]
+            octal = oct(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+
 class IP:
     def __init__(self, ip_address, subnet_mask, mask_flag):
         self.ip_address = ip_address
-        if mask_flag == 'prefix':
+        if mask_flag == 'Префикс':
             self.subnet_mask_index = subnet_mask
             self.subnet_mask = self.prefix_to_decimal(self.subnet_mask_index)
 
-        elif mask_flag == 'decimal':
+        elif mask_flag == 'Десятичный':
             self.subnet_mask = subnet_mask
             self.subnet_mask_index = self.get_mask_index(subnet_mask)
 
         self.network_address = self.get_network_address(ip_address, subnet_mask)
         self.binary_address = self.convert_to_binary(ip_address)
         self.host_count = self.calculate_host_count(subnet_mask)
+        logger.info(f'Успешный рассчёт ip-адреса: {self.ip_address}')
     def convert_to_binary(self, ip_address):
         try:
             octets = ip_address.split('.')
@@ -248,5 +304,5 @@ class IP:
         return '.'.join(mask_decimal)
 
     def __str__(self):
-        return (f' IP-адрес: {self.ip_address}\n Двоичный адрес: {self.binary_address}\n Маска подсети: {self.subnet_mask}\n Индекс маски подсети: {self.subnet_mask_index}\n '
-                f'Число хостов: {self.host_count}\n Адрес сети: {self.network_address}\n')
+        return (f'IP-адрес: {self.ip_address}\nДвоичный адрес: {self.binary_address}\nМаска подсети: {self.subnet_mask}\nИндекс маски подсети: {self.subnet_mask_index}\n'
+                f'Число хостов: {self.host_count}\nАдрес сети: {self.network_address}\n')
