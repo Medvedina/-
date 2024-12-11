@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from customtkinter import CTkOptionMenu
+
 from service.service_functions import *
 import errors.errors as er
 import os
@@ -174,24 +176,22 @@ def main():
         mode_change()
 
         def menu_function_ipcalc(choice):
-            global mask_flag
             if choice == 'Префикс':
-                mask_flag = 'prefix'
                 entry_mask.configure(width=30)
                 label_mask.configure(text='Префикс маски подсети:')
             elif choice == 'Десятичный':
-                mask_flag = 'decimal'
                 entry_mask.configure(width=140)
                 label_mask.configure(text='Маска подсети:')
-            return mask_flag
 
         def key_pressed_ipcalc(event):
             calculate_ip()
 
         def calculate_ip():
             try:
-                result = IP(entry_ip.get(), entry_mask.get(), str(menu_function_ipcalc(mask_menu_var)))
+                result = IP(entry_ip.get(), entry_mask.get(), mask_menu_var.get())
                 notify_user(answer_box, f'Число: {result}\n', 'write')
+            except TypeError as e:
+                notify_user(answer_box, 'Выберите способ представления маски подсети ({e.__class__.__name__})')
             except ipaddress.NetmaskValueError as e:
                 notify_user(answer_box, f'Ошибка ввода.(Некорректная маска подсети). ({e.__class__.__name__})\n', 'write')
             except ipaddress.AddressValueError as e:
@@ -203,7 +203,7 @@ def main():
         label_ip = ctk.CTkLabel(window, text='Ip-адрес:', font=('Arial', 12, 'bold'))
         label_ip.place(x=30, y=25)
 
-        label_mask = ctk.CTkLabel(window, text='Префикс маски подсети:', font=('Arial', 12, 'bold'))
+        label_mask = ctk.CTkLabel(window, text='', font=('Arial', 12, 'bold'))
         label_mask.place(x=230, y=25)
 
         label_answer = ctk.CTkLabel(window, text='Рассчёт:', font=('Arial', 12, 'bold'))
@@ -213,11 +213,11 @@ def main():
         entry_ip.place(x=30, y=60)
         entry_ip.bind('<Return>', key_pressed_ipcalc)
 
-        entry_mask = ctk.CTkEntry(window, width=30)
+        entry_mask = ctk.CTkEntry(window, width=100)
         entry_mask.place(x=230, y=60)
         entry_mask.bind('<Return>', key_pressed_ipcalc)
 
-        mask_menu_var = ctk.Variable(value='Префикс')
+        mask_menu_var = ctk.Variable(value='Представление')
         menu_mask = ctk.CTkOptionMenu(window, values=["Префикс", "Десятичный"],
                                              command=menu_function_ipcalc,
                                              variable=mask_menu_var)
@@ -237,6 +237,69 @@ def main():
         mode_theme_change(button_ipcalc, button_back, menu_mask)
         if ctk.get_appearance_mode() == 'Light':
             menu_mask.configure(button_color='#596174')
+
+    def mode_numsys():
+        mode_change()
+
+        def menu_function_numsys(choice):
+            result = None
+            if choice == 'Двоичная':
+                result = 'binary'
+            elif choice == 'Восьмиричная':
+                result = 'octal'
+            elif choice == 'Десятичная':
+                result = 'decimal'
+            elif choice == 'Шестнадцатиричная':
+                result = 'hexadecimal'
+            return result
+
+        def numsys_do():
+            try:
+                result = numsys(str(menu_function_numsys(menu_mode_var.get())), entry_input.get())
+                notify_user(answer_box, f'Двоичная форма: {result[0]}\n'
+                                        f'Восьмиричная форма: {result[1]}\n'
+                                        f'Десятичная форма: {result[2]}\n'
+                                        f'Шестнадцатиричная форма: {result[3]}\n', 'write')
+            except TypeError as e:
+                notify_user(answer_box, f'Выберите систему счисления ({e.__class__.__name__})', 'write')
+            except InvalidNumberError as e:
+                notify_user(answer_box, f'Ошибка ввода. Введите корректное для выбранной системы число ({e.__class__.__name__})', 'write')
+
+        def key_pressed_numsys(event):
+            numsys_do()
+
+        entry_input = ctk.CTkEntry(window, width=200)
+        entry_input.place(x=30, y=40)
+        entry_input.bind('<Return>', key_pressed_numsys)
+
+        menu_mode_var = ctk.Variable(value='Система счисления')
+        menu_numsys = ctk.CTkOptionMenu(window, values=["Двоичная", "Восьмиричная", "Десятичная", "Шестнадцатиричная"],
+                                             command=menu_function_numsys,
+                                             variable=menu_mode_var)
+        menu_numsys.place(x=30, y=90)
+
+        label_answer = ctk.CTkLabel(window, text='Расчёт:', font=('Arial', 12, 'bold'))
+        label_answer.place(x=30, y=150)
+
+        label_numsys = ctk.CTkLabel(window, text='Введите число:', font=('Arial', 12, 'bold'))
+        label_numsys.place(x=30, y=10)
+
+        answer_box = ctk.CTkTextbox(window, height=150, width=340, state=ctk.DISABLED)
+        answer_box.place(x=30, y=180)
+
+        button_numsys = ctk.CTkButton(window, width=100, height=30, text='Рассчитать', command=numsys_do)
+        button_numsys.place(x=250, y=360)
+
+        button_back = ctk.CTkButton(window, text='Назад', width=100, height=30,
+                                    command=lambda: mode_button_menu(entry_input, answer_box, button_back,
+                                                                     button_numsys, menu_numsys, label_numsys, label_answer))
+
+        button_back.place(x=30, y=360)
+
+
+        mode_theme_change(button_numsys, button_back, menu_numsys)
+        if ctk.get_appearance_mode() == 'Light':
+            menu_numsys.configure(button_color='#596174')
 
     def clear_logs(entry_logs_state):
         with open('history/logs.txt', 'w') as f:
@@ -289,7 +352,7 @@ def main():
     button_mode_ipcalc = ctk.CTkButton(window, text='Калькулятор IP', command=mode_ipcalc, width=150, height=40)
     button_mode_ipcalc.place(x=30, y=130)
 
-    button_mode_numsys = ctk.CTkButton(window, text='Системы счисления', width=150, height=40, state=ctk.DISABLED)  #Доделать
+    button_mode_numsys = ctk.CTkButton(window, text='Системы счисления', width=150, height=40, command=mode_numsys)
     button_mode_numsys.place(x=210, y=130)
 
     entry_logs_state = ctk.CTkEntry(window, width=240)
