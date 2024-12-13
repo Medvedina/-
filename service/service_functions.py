@@ -1,61 +1,72 @@
+from history.logs_script import *
+from errors.errors import *
+import ipaddress
+
+
+def random_check(test_value):
+    allowed_chars = [' ', '', '-']
+    return not test_value.isnumeric() and test_value not in allowed_chars
+
+
 def calc(query):
-    from history.logs_script import inputlog, outputlog
-
-    inputlog(query)
-
+    logger.info(f'*Калькулятор* Введено: {query}')
     nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
     operations = ['+', '-', '*', '/', '^']
-    if query.count('(') != query.count(')'):
-        return 'Ошибка ввода. Закройте все скобки.'
-    for i in query:
-        if (i not in nums and i not in operations and
-                i != '(' and i != ')' and i != ' '):
-            res = 'Ошибка ввода. Введите выражение аналогично примеру'
-            outputlog(res)
-            return res
     actions = []
-    full_actions = []
-    current_action = ''
+    action_current = ''
+    countable = False
+
+    for char in query:
+        if char in nums:
+            countable = True
+
+    if countable is False:
+        logger.error(f'Ошибка ввода. Введите выражение согласно примеру')
+        raise InputError
+
+    if query.count('(') != query.count(')'):
+        logger.error(f'Ошибка ввода. Закройте все скобки')
+        raise BracketError
+
     while query != 'exit':
         if query == 'exit':
-            res = 'Выход'
-            outputlog(res)
-            return res
+            logger.info('ВЫХОД')
+            return 'Выход'
         else:
             step_left = 0
             for char in query:
                 if char in nums:
                     if char != ',':
-                        current_action += char
+                        action_current += char
                     elif char == ',':
-                        current_action += '.'
+                        action_current += '.'
                 elif char in operations or char in '()':
-                    if current_action:
-                        actions.append(current_action)
-                        current_action = ''
+                    if action_current:
+                        actions.append(action_current)
+                        action_current = ''
                     actions.append(char)
-            if current_action:
-                actions.append(current_action)
+            if action_current:
+                actions.append(action_current)
             actions.insert(0, '(')
             actions.append(')')
-            full_actions = actions.copy()
-            while len(full_actions) != 1:
+            actions_full = actions.copy()
+            while len(actions_full) != 1:
                 step = 0
                 bracket_flag = True
-                while step < len(full_actions):
+                while step < len(actions_full):
                     if bracket_flag:
-                        if full_actions[step] == ')':
+                        if actions_full[step] == ')':
                             step_right = step
                             actions.clear()
-                            substep = 0
-                            while step_left + substep <= step_right:
-                                actions.append(full_actions[step_left])
-                                del full_actions[step_left]
-                                substep += 1
+                            step_sub = 0
+                            while step_left + step_sub <= step_right:
+                                actions.append(actions_full[step_left])
+                                del actions_full[step_left]
+                                step_sub += 1
                             bracket_flag = False
                             del actions[0]
                             del actions[step_right - step_left - 1]
-                        elif full_actions[step] == '(':
+                        elif actions_full[step] == '(':
                             step_left = step
                     step += 1
                 actions_copy = actions
@@ -78,16 +89,15 @@ def calc(query):
                         del actions_copy[step]
                         step -= 2
                     elif actions[step] == '/':
-                        if float(actions_copy[step + 1]) != 0:
+                        try:
                             actions_copy[step - 1] = (float(actions_copy[step - 1]) /
                                                       float(actions_copy[step + 1]))
                             del actions_copy[step]
                             del actions_copy[step]
                             step -= 2
-                        else:
-                            res = '*** Ошибка: деление на ноль ***'
-                            outputlog(res)
-                            return res
+                        except ZeroDivisionError:
+                            logger.error(f'*Калькулятор* Ошибка. Деление на 0')
+                            raise DivZero
                     step += 1
                 step = 0
                 actions = actions_copy
@@ -106,68 +116,192 @@ def calc(query):
                         step -= 2
                     step += 1
                 try:
-                    full_actions.insert(step_left, actions_copy[0])
+                    actions_full.insert(step_left, actions_copy[0])
                 except IndexError:
-                    res = 'Ошибка ввода. Введите выражение аналогично примеру'
-                    outputlog(res)
-                    return res
-            res = float(full_actions[0])
-            outputlog(res)
+                    logger.error(f'*Калькулятор* Ошибка ввода. '
+                                 f'Введите выражение аналогично примеру')
+                    raise InputError
+            res = float(actions_full[0])
+            logger.info(f'*Калькулятор* Успешно. Результат: {res}')
             return res
 
 
-def rand(randrange, banlist):
-    from history.logs_script import inputlog, outputlog
+def rand(rand_range_start, rand_range_finish, ban_list):
+    logger.info(f'Введено: Начало - {rand_range_start}, Конец - {rand_range_finish}, запрещено = {ban_list}')
 
-    inputlog(randrange, banlist)
-
-    if len(randrange.split()) > 2:
-        res = 'Ошибка ввода(введено больше двух чисел). Введите диапазон согласно примеру'
-        outputlog(res)
-        return res
-    else:
-        for i in randrange:
-            if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-                res = 'Ошибка ввода(получены не числовые значения). Введите диапазон согласно примеру'
-                outputlog(res)
-                return res
-    for i in banlist:
-        if not i.isnumeric() and i != ' ' and i != '' and i != '-':
-            res = 'Ошибка ввода(запрещённые числа). Введите диапазон согласно примеру'
-            outputlog(res)
-            return res
+    for i in rand_range_start:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
+                         'Введите диапазон согласно примеру')
+            raise InvalidNumberError
+    for i in rand_range_finish:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(получены не числовые значения). '
+                         'Введите диапазон согласно примеру')
+            raise InvalidNumberError
+    for i in ban_list:
+        if random_check(i):
+            logger.error('*Генератор* Ошибка ввода(избегаемые числа). '
+                         'Введите диапазон согласно примеру')
+            raise BanListRangeError
 
     from random import randint
+
     try:
-        res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
-    except:
-        res = 'Ошибка ввода (Получен пустой диапазон). Расположите числа по возрастанию'
-        outputlog(res)
-        return res
-    counter_range = 0
-    counter_banlist = 0
-    for i in range(int(randrange.split()[0]), int(randrange.split()[1]) + 1):
-        counter_range += 1
-        if i in list(map(int, banlist.split())):
-            counter_banlist += 1
-    if counter_range == counter_banlist:
-        res = 'Ошибка ввода (Запрещены все значения)'
-        outputlog(res)
-        return res
-    while res in list(map(int, banlist.split())):
-        res = randint(int(randrange.split()[0]), int(randrange.split()[1]))
-        outputlog(res)
+        res = randint(int(rand_range_start), int(rand_range_finish))
+    except ValueError:
+        logger.error('*Генератор* Ошибка ввода. '
+                     'Получен пустой диапазон.')
+        raise InputError
+
+    counter_rand_range = 0
+    counter_ban_list = 0
+
+    for i in range(int(rand_range_start), int(rand_range_finish) + 1):
+        counter_rand_range += 1
+        if i in list(map(int, ban_list.split())):
+            counter_ban_list += 1
+
+    if counter_rand_range == counter_ban_list:
+        logger.error('*Генератор* Ошибка ввода. Запрещены все значения')
+        raise BanListError
+
+    while res in list(map(int, ban_list.split())):
+        res = randint(int(rand_range_start), int(rand_range_finish))
+
+    logger.info(f'Успешно, число: {res}')
     return res
 
 
-def mode_check(choise):
-    from history.logs_script import inputlog
-    inputlog(choise)
-    if not choise.isnumeric():
-        return False
+def numsys(original_system, number):
+    logger.info(f'ВВОД: {original_system}, {number}')
+    if original_system == 'decimal':
+        try:
+            decimal = int(number)
+            binary = bin(int(number))[2:]
+            octal = oct(int(number))[2:]
+            hexadecimal = hex(int(number))[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except Exception:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
 
-    elif int(choise) >= 3:
-        return False
+    elif original_system == 'binary':
+        try:
+            binary = number
+            decimal = int(number, 2)
+            octal = oct(decimal)[2:]
+            hexadecimal = hex(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except Exception:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
 
-    else:
-        return int(choise)
+    elif original_system == 'octal':
+        try:
+            octal = number
+            decimal = int(number, 8)
+            binary = bin(decimal)[2:]
+            hexadecimal = hex(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except Exception:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+    elif original_system == 'hexadecimal':
+        try:
+            hexadecimal = number.lower()
+            decimal = int(number, 16)
+            binary = bin(decimal)[2:]
+            octal = oct(decimal)[2:]
+            logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
+            return [binary, octal, str(decimal), hexadecimal]
+        except Exception:
+            logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
+            raise InvalidNumberError
+
+
+class IP:
+    def __init__(self, ip_address, subnet_mask, mask_flag):
+        self.ip_address = ip_address
+        if mask_flag == 'Префикс':
+            self.subnet_mask_index = subnet_mask
+            self.subnet_mask = self.prefix_to_decimal(self.subnet_mask_index)
+
+        elif mask_flag == 'Десятичный':
+            self.subnet_mask = subnet_mask
+            self.subnet_mask_index = self.get_mask_index(subnet_mask)
+
+        self.network_address = self.get_network_address(ip_address, subnet_mask)
+        self.binary_address = self.convert_to_binary(ip_address)
+        self.host_count = self.calculate_host_count(subnet_mask)
+        logger.info(f'Успешный рассчёт ip-адреса: {self.ip_address}')
+
+    @staticmethod
+    def convert_to_binary(ip_address):
+        try:
+            octets = ip_address.split('.')
+            binary_octets = [format(int(octet), '08b') for octet in octets]
+            return '.'.join(binary_octets)
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__}')
+            raise ipaddress.AddressValueError
+
+    @staticmethod
+    def calculate_host_count(subnet_mask):
+        try:
+            if subnet_mask.count('.') == 0:
+                return 2 ** (32 - int(subnet_mask)) - 2
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректную маску подсети ({e.__class__.__name__}')
+            raise ipaddress.NetmaskValueError
+        else:
+            mask_bits = sum(bin(int(octet)).count('1') for octet in subnet_mask.split('.'))
+            return (2 ** (32 - mask_bits)) - 2
+
+    @staticmethod
+    def get_network_address(ip_address, subnet_mask):
+        try:
+            network = ipaddress.IPv4Network(f'{ip_address}/{subnet_mask}', strict=False)
+            return str(network.network_address)
+        except ipaddress.NetmaskValueError as e:
+            logger.error(f'Ошибка. Введите корректную маску подсети ({e.__class__.__name__})')
+            raise ipaddress.NetmaskValueError
+
+        except ipaddress.AddressValueError as e:
+            logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__})')
+            raise ipaddress.AddressValueError
+
+    @staticmethod
+    def get_mask_index(subnet_mask):
+        if subnet_mask.count('.') < 3:
+            logger.error(f'Ошибка. Введите корректную маску подсети (NetmaskValueError)')
+            raise ipaddress.NetmaskValueError
+        octets = subnet_mask.split('.')
+        binary_octets = [format(int(octet), '08b') for octet in octets]
+        return str(binary_octets).count('1')
+
+    @staticmethod
+    def prefix_to_decimal(prefix):
+        try:
+            int(prefix)
+        except Exception as e:
+            logger.error(f'Ошибка. Введите корректный префикс маски подсети ({e.__class__.__name__}')
+            raise PrefixError
+
+        if not (0 <= int(prefix) <= 32):
+            logger.error(f'Ошибка. Префикс длиннее 32. (PrefixError)')
+            raise PrefixError
+
+        mask_bin = '1' * int(prefix) + '0' * (32 - int(prefix))
+        mask_decimal = [str(int(mask_bin[i:i + 8], 2)) for i in range(0, 32, 8)]
+        return '.'.join(mask_decimal)
+
+    def __str__(self):
+        return (
+            f'IP-адрес: {self.ip_address}\nДвоичный адрес: {self.binary_address}\nМаска подсети: '
+            f'{self.subnet_mask}\nИндекс маски подсети: {self.subnet_mask_index}\n'
+            f'Число хостов: {self.host_count}\nАдрес сети: {self.network_address}\n')
