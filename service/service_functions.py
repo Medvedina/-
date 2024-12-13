@@ -3,16 +3,9 @@ from errors.errors import *
 import ipaddress
 
 
-def notify_user(*args):
-    return print(*args)
-
-
 def random_check(test_value):
-    if (not test_value.isnumeric() and test_value != ' ' and
-            test_value != '' and test_value != '-'):
-        return True
-    else:
-        return False
+    allowed_chars = [' ', '', '-']
+    return not test_value.isnumeric() and test_value not in allowed_chars
 
 
 def calc(query):
@@ -20,7 +13,6 @@ def calc(query):
     nums = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '.', ',']
     operations = ['+', '-', '*', '/', '^']
     actions = []
-    actions_full = []
     action_current = ''
     countable = False
 
@@ -29,6 +21,7 @@ def calc(query):
             countable = True
 
     if countable is False:
+        logger.error(f'Ошибка ввода. Введите выражение согласно примеру')
         raise InputError
 
     if query.count('(') != query.count(')'):
@@ -37,6 +30,7 @@ def calc(query):
 
     while query != 'exit':
         if query == 'exit':
+            logger.info('ВЫХОД')
             return 'Выход'
         else:
             step_left = 0
@@ -178,6 +172,7 @@ def rand(rand_range_start, rand_range_finish, ban_list):
     logger.info(f'Успешно, число: {res}')
     return res
 
+
 def numsys(original_system, number):
     logger.info(f'ВВОД: {original_system}, {number}')
     if original_system == 'decimal':
@@ -188,7 +183,7 @@ def numsys(original_system, number):
             hexadecimal = hex(int(number))[2:]
             logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
             return [binary, octal, str(decimal), hexadecimal]
-        except:
+        except Exception:
             logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
             raise InvalidNumberError
 
@@ -200,21 +195,19 @@ def numsys(original_system, number):
             hexadecimal = hex(decimal)[2:]
             logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
             return [binary, octal, str(decimal), hexadecimal]
-        except:
+        except Exception:
             logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
             raise InvalidNumberError
 
     elif original_system == 'octal':
         try:
             octal = number
-            decimal = 0
-            for index, bit in enumerate(number[::-1]):
-                decimal += int(bit) * (8 ** index)
+            decimal = int(number, 8)
             binary = bin(decimal)[2:]
             hexadecimal = hex(decimal)[2:]
             logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
             return [binary, octal, str(decimal), hexadecimal]
-        except:
+        except Exception:
             logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
             raise InvalidNumberError
 
@@ -226,7 +219,7 @@ def numsys(original_system, number):
             octal = oct(decimal)[2:]
             logger.info(f'Результат: {[binary, octal, str(decimal), hexadecimal]}')
             return [binary, octal, str(decimal), hexadecimal]
-        except:
+        except Exception:
             logger.error(f'Ошибка ввода. Введите корректное число {InvalidNumberError}')
             raise InvalidNumberError
 
@@ -246,7 +239,9 @@ class IP:
         self.binary_address = self.convert_to_binary(ip_address)
         self.host_count = self.calculate_host_count(subnet_mask)
         logger.info(f'Успешный рассчёт ip-адреса: {self.ip_address}')
-    def convert_to_binary(self, ip_address):
+
+    @staticmethod
+    def convert_to_binary(ip_address):
         try:
             octets = ip_address.split('.')
             binary_octets = [format(int(octet), '08b') for octet in octets]
@@ -255,10 +250,11 @@ class IP:
             logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__}')
             raise ipaddress.AddressValueError
 
-    def calculate_host_count(self, subnet_mask):
+    @staticmethod
+    def calculate_host_count(subnet_mask):
         try:
             if subnet_mask.count('.') == 0:
-                return 2**(32 - int(subnet_mask)) - 2
+                return 2 ** (32 - int(subnet_mask)) - 2
         except Exception as e:
             logger.error(f'Ошибка. Введите корректную маску подсети ({e.__class__.__name__}')
             raise ipaddress.NetmaskValueError
@@ -266,7 +262,8 @@ class IP:
             mask_bits = sum(bin(int(octet)).count('1') for octet in subnet_mask.split('.'))
             return (2 ** (32 - mask_bits)) - 2
 
-    def get_network_address(self, ip_address, subnet_mask):
+    @staticmethod
+    def get_network_address(ip_address, subnet_mask):
         try:
             network = ipaddress.IPv4Network(f'{ip_address}/{subnet_mask}', strict=False)
             return str(network.network_address)
@@ -278,7 +275,8 @@ class IP:
             logger.error(f'Ошибка. Введите корректный IP-адрес ({e.__class__.__name__})')
             raise ipaddress.AddressValueError
 
-    def get_mask_index(self, subnet_mask):
+    @staticmethod
+    def get_mask_index(subnet_mask):
         if subnet_mask.count('.') < 3:
             logger.error(f'Ошибка. Введите корректную маску подсети (NetmaskValueError)')
             raise ipaddress.NetmaskValueError
@@ -286,7 +284,8 @@ class IP:
         binary_octets = [format(int(octet), '08b') for octet in octets]
         return str(binary_octets).count('1')
 
-    def prefix_to_decimal(self, prefix):
+    @staticmethod
+    def prefix_to_decimal(prefix):
         try:
             int(prefix)
         except Exception as e:
@@ -302,5 +301,7 @@ class IP:
         return '.'.join(mask_decimal)
 
     def __str__(self):
-        return (f'IP-адрес: {self.ip_address}\nДвоичный адрес: {self.binary_address}\nМаска подсети: {self.subnet_mask}\nИндекс маски подсети: {self.subnet_mask_index}\n'
-                f'Число хостов: {self.host_count}\nАдрес сети: {self.network_address}\n')
+        return (
+            f'IP-адрес: {self.ip_address}\nДвоичный адрес: {self.binary_address}\nМаска подсети: '
+            f'{self.subnet_mask}\nИндекс маски подсети: {self.subnet_mask_index}\n'
+            f'Число хостов: {self.host_count}\nАдрес сети: {self.network_address}\n')
