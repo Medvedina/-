@@ -23,7 +23,5 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests/test_calc.py
-        pytest tests/test_rand.py
-        pytest tests/test_ipcalc.py
-        pytest tests/test_numsys.py
+        pytest testing/tests/test_service.py
+        pytest testing/tests/test_graphic.py
