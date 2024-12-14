@@ -4,7 +4,14 @@ import errors.errors as er
 import os
 
 
-def main():
+def create_app():
+    ctk.set_appearance_mode("dark")
+
+    window = ctk.CTk()
+    window.title('Турбо-калькулятор 3000')
+    window.geometry("400x400")
+    window.resizable(width=False, height=False)
+
     def mode_change():
         button_mode_rand.place_forget()
         button_mode_calc.place_forget()
@@ -442,8 +449,11 @@ def main():
 
     logs_clear_success = ctk.CTkLabel(window, text='Очистка выполнена', font=('Arial', 12, 'bold'), text_color='green')
 
-    window.mainloop()
+    return window
 
+def main():
+    window = create_app()
+    window.mainloop()
 
 if __name__ == '__main__':
     main()
