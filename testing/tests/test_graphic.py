@@ -2,6 +2,16 @@ import pytest
 import customtkinter as ctk
 from beautiful_calc import create_app
 
+
+@pytest.fixture(scope='module', autouse=True)
+def app():
+    window = create_app()
+    window.update_idletasks()
+    yield window
+    window.quit()
+    window.destroy()
+
+
 def test_widget_visibility(app):
     app.update()
 
