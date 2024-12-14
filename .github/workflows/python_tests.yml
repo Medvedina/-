@@ -41,4 +41,5 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest testing/tests
+        pytest testing/tests/test_service.py --tb=short --disable-warnings
+        pytest testing/tests/test_graphic.py --tb=short --disable-warnings
