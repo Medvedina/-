@@ -15,14 +15,29 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.8'  # Укажите версию Python, которую вы хотите использовать
+
         
     - name: Install system dependencies
       run: sudo apt-get install -y libgl1-mesa-glx libegl1
+
       
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx libegl1 xvfb
+
+
+    - name: Start Xvfb
+      run: |
+        Xvfb :99 -screen 0 1920x1080x24 &
+        export DISPLAY=:99
+
+        
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt  # Убедитесь, что у вас есть файл requirements.txt
+        
 
     - name: Run tests
       run: |
