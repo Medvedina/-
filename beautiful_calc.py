@@ -449,11 +449,18 @@ def create_app():
 
     logs_clear_success = ctk.CTkLabel(window, text='Очистка выполнена', font=('Arial', 12, 'bold'), text_color='green')
 
-    return window
+    mode_calc = ModeCalc
+    mode_rand = ModeRand
+    mode_numsys = ModeNumSys
+    mode_ipcalc = ModeIPCalc
+
+    return window, mode_calc, mode_rand, mode_numsys, mode_ipcalc
+
 
 def main():
-    window = create_app()
+    window = create_app()[0]
     window.mainloop()
+
 
 if __name__ == '__main__':
     main()
