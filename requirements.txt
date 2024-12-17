@@ -1,2 +1,5 @@
 pytest
+pytest-qt
+PyQt6
+PySide6
 customtkinter
